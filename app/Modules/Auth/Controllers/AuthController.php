@@ -10,6 +10,10 @@ use App\Models\Docente;
 use App\Models\Alumno;
 use App\Models\Administrador;
 
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Illuminate\Support\Carbon;
+
 class AuthController extends Controller
 {
 
@@ -109,4 +113,89 @@ class AuthController extends Controller
         'message' => 'Sesión cerrada'
     ]);
 }
+
+ public function me(Request $request)
+    {
+        return response()->json([
+            'user' => $request->user()
+        ]);
+    }
+
+
+
+    public function forgotPassword(Request $request)
+{
+    $request->validate([
+        'correoInstitucional' => 'required|email'
+    ]);
+
+    $usuario = Usuario::where(
+        'correoInstitucional',
+        $request->correoInstitucional
+    )->first();
+
+    if (!$usuario) {
+        return response()->json([
+            'message' => 'Usuario no encontrado'
+        ], 404);
+    }
+
+    $token = Str::random(60);
+
+    DB::table('password_reset_tokens')->updateOrInsert(
+        ['email' => $request->correoInstitucional],
+        [
+            'token' => $token,
+            'created_at' => Carbon::now()
+        ]
+    );
+
+    return response()->json([
+        'message' => 'Token generado',
+        'token' => $token // solo para pruebas
+    ]);
+}
+
+
+public function resetPassword(Request $request)
+{
+    $request->validate([
+        'correoInstitucional' => 'required|email',
+        'token' => 'required',
+        'password' => 'required|min:6'
+    ]);
+
+    $reset = DB::table('password_reset_tokens')
+        ->where('email', $request->correoInstitucional)
+        ->where('token', $request->token)
+        ->first();
+
+    if (!$reset) {
+        return response()->json([
+            'message' => 'Token inválido'
+        ], 400);
+    }
+
+    $usuario = Usuario::where(
+        'correoInstitucional',
+        $request->correoInstitucional
+    )->first();
+
+    $usuario->password = $request->password;
+    $usuario->save();
+
+    DB::table('password_reset_tokens')
+        ->where('email', $request->correoInstitucional)
+        ->delete();
+
+    return response()->json([
+        'message' => 'Contraseña actualizada correctamente'
+    ]);
+}
+
+
+
+
+
+
 }
