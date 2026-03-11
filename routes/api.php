@@ -8,6 +8,4 @@
 
 
 require base_path('app/Modules/Auth/Routes/auth.php');
-require base_path('app/Modules/Usuarios/Routes/usuarios.php');
-require base_path('app/Modules/Eventos/Routes/eventos.php');
 

@@ -4,9 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Hash;
+use Laravel\Sanctum\HasApiTokens;
 
 class Usuario extends Model
 {
+
+    use HasApiTokens; 
+
     protected $table = 'usuarios';
 
     protected $fillable = [
@@ -54,6 +58,8 @@ public function docente()
  * Relacion con la tabla alumno 
  */
 public function alumno(){
-    return $this->hasOne(Alumno::class, 'usuarios_id');
+    return $this->hasOne(Alumno::class, 'usuario_id');
 }
+
+
 }
