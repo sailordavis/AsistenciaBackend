@@ -20,4 +20,12 @@ class Docente extends Model
     {
         return $this->belongsTo(Usuario::class, 'usuario_id');
     }
+
+    /**
+     * Relacion con carrera
+     */
+public function carreras()
+{
+    return $this->belongsToMany(Carrera::class);
+}
 }

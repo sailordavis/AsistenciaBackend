@@ -10,7 +10,8 @@ class Alumno extends Model
 
     protected $fillable = [
         'codigo_institucional',
-        'usuario_id'
+        'usuario_id',
+         'carrera_id'
     ];
 
      /**
@@ -19,5 +20,21 @@ class Alumno extends Model
     public function usuario()
     {
         return $this->belongsTo(Usuario::class, 'usuario_id');
+    }
+
+    /**
+     * Relación con carrera
+     */
+    public function carrera()
+    {
+        return $this->belongsTo(Carrera::class, 'carrera_id');
+    }
+
+       /**
+     * Relacion con grupo
+     */
+    public function grupo()
+    {
+    return $this->belongsToMany(Grupo::class);
     }
 }
