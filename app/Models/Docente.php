@@ -18,14 +18,17 @@ class Docente extends Model
      */
     public function usuario()
     {
-        return $this->belongsTo(Usuario::class, 'usuario_id');
+        return $this->belongsTo(Usuario::class);
     }
 
-    /**
-     * Relacion con carrera
-     */
-public function carreras()
-{
-    return $this->belongsToMany(Carrera::class);
-}
+    
+
+
+   /**
+    * Relacion con tabla grupos
+    */
+   public function grupos()
+   {
+    return $this->hasMany(Grupo::class);
+   }
 }

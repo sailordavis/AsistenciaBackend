@@ -34,31 +34,31 @@ class Usuario extends Authenticatable
     }
 
     /**
-     * Relación con la tabla roles
+     * Relación con la tabla rols
      */
     public function rol()
     {
-        return $this->belongsTo(Rol::class, 'rol_id');
+        return $this->belongsTo(Rol::class);
     }
     /**
      * Relacion con la tabla administrador 
      */
     public function administrador()
 {
-    return $this->hasOne(Administrador::class, 'usuario_id');
+    return $this->hasOne(Administrador::class);
 }
 /**
  * Relacion con la tabla docente 
  */
 public function docente()
 {
-    return $this->hasOne(Docente::class, 'usuario_id');
+    return $this->hasOne(Docente::class);
 }
 /**
  * Relacion con la tabla alumno 
  */
 public function alumno(){
-    return $this->hasOne(Alumno::class, 'usuario_id');
+    return $this->hasOne(Alumno::class);
 }
 
 /**
@@ -68,6 +68,11 @@ public function alumno(){
     {
         return $this->hasMany(Evento::class, 'creador_id');
     }
+
+    
+
+
+     
 
 
 }

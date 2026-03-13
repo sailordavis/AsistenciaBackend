@@ -26,6 +26,6 @@ class Asistencia extends Model
     // Una asistencia pertenece a un alumno (usuario)
     public function alumno()
     {
-        return $this->belongsTo(Usuario::class, 'alumno_id');
+        return $this->belongsTo(Alumno::class);
     }
 }

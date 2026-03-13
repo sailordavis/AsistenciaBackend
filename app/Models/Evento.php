@@ -35,4 +35,12 @@ public function grupos()
 {
     return $this->belongsToMany(Grupo::class);
 }
+
+
+/**
+ * Relacion con la tabla asistencia
+ */
+public function asistencias(){
+    return $this->hasMany(Asistencia::class);
+}
 }

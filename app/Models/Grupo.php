@@ -22,7 +22,7 @@ class Grupo extends Model
      */
      public function unidad_academica()
     {
-        return $this->belongsTo(Unidad_academica::class, 'unidad_academica_id');
+        return $this->belongsTo(Unidad_academica::class);
     }
 
      /**
@@ -30,7 +30,7 @@ class Grupo extends Model
      */
      public function docente()
     {
-        return $this->belongsTo(Docente::class, 'docente_id');
+        return $this->belongsTo(Docente::class);
     }
 
      /**
@@ -38,7 +38,7 @@ class Grupo extends Model
      */
      public function carrera()
     {
-        return $this->belongsTo(Carrera::class, 'carrera_id');
+        return $this->belongsTo(Carrera::class);
     }
 
      /**
@@ -46,14 +46,14 @@ class Grupo extends Model
      */
      public function periodo_academico()
     {
-        return $this->belongsTo(Periodo_academico::class, 'periodo_id');
+        return $this->belongsTo(Periodo_academico::class);
     }
 
 
-       /**
+    /**
      * Relacion con alumno
      */
-     public function alumno()
+     public function alumnos()
     {
     return $this->belongsToMany(Alumno::class);
     }

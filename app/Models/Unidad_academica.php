@@ -18,6 +18,14 @@ class Unidad_academica extends Model
      */
      public function tipo_unidad()
     {
-        return $this->belongsTo(Tipo_unidad::class, 'tipo_unidad_id');
+        return $this->belongsTo(Tipo_unidad::class);
+    }
+
+     /**
+     * Relación con la tabla grupo
+     */
+    public function grupos()
+    {
+        return $this->hasMany(Grupo::class);
     }
 }

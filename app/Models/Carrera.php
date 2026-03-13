@@ -13,13 +13,6 @@ class Carrera extends Model
     ];
 
 
-    /**
-     * Relacion con docentes
-     */
-    public function docentes()
-{
-    return $this->belongsToMany(Docente::class);
-}
 
 
   /**
@@ -27,6 +20,14 @@ class Carrera extends Model
    */
   public function alumnos()
   {
-    return $this->hasMany(Alumno::class, 'carrera_id');
+    return $this->hasMany(Alumno::class);
+  }
+
+  /**
+   * Relacion con la tabla grupo
+   */
+  public function grupos()
+  {
+    return $this->hasMany(Grupo::class,);
   }
 }

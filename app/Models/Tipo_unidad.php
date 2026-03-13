@@ -19,6 +19,6 @@ class Tipo_unidad extends Model
      */
     public function unidad_academicas()
     {
-        return $this->hasMany(Unidad_academica::class, 'tipo_unidad_id');
+        return $this->hasMany(Unidad_academica::class);
     }
 }

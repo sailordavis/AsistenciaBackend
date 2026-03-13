@@ -19,7 +19,7 @@ class Alumno extends Model
      */
     public function usuario()
     {
-        return $this->belongsTo(Usuario::class, 'usuario_id');
+        return $this->belongsTo(Usuario::class);
     }
 
     /**
@@ -27,14 +27,22 @@ class Alumno extends Model
      */
     public function carrera()
     {
-        return $this->belongsTo(Carrera::class, 'carrera_id');
+        return $this->belongsTo(Carrera::class);
     }
 
        /**
      * Relacion con grupo
      */
-    public function grupo()
+    public function grupos()
     {
     return $this->belongsToMany(Grupo::class);
     }
+
+
+/**
+ * Relacion con la tabla asistencia
+ */
+public function asistencias(){
+    return $this->hasMany(Asistencia::class);
+}
 }
