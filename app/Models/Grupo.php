@@ -57,4 +57,13 @@ class Grupo extends Model
     {
     return $this->belongsToMany(Alumno::class);
     }
+
+
+      /**
+     * Relacion con la tabla eventos
+     */
+public function eventos()
+{
+    return $this->belongsToMany(Evento::class);
+}
 }
