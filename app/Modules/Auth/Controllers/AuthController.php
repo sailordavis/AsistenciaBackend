@@ -26,7 +26,8 @@ class AuthController extends Controller
         'password' => 'required|min:6',
         'rol_id' =>  'required|in:1,2,3',
         'numero_nomina' => 'required_if:rol_id,2',
-        'codigo_institucional' => 'required_if:rol_id,3'
+        'codigo_institucional' => 'required_if:rol_id,3',
+        'carrera_id' => 'required_if:rol_id,3|exists:carreras,id'
     ]);
 
     DB::beginTransaction();
@@ -41,21 +42,22 @@ class AuthController extends Controller
             'rol_id' => $request->rol_id
         ]);
 
-        if ($request->rol_id == 2) {
+        if ($request->rol_id == 2) { //Registro de cuenta docente
             Docente::create([
                 'usuario_id' => $usuario->id,
                 'numero_nomina' => $request->numero_nomina
             ]);
         }
 
-        if ($request->rol_id == 3) {
+        if ($request->rol_id == 3) { //Registro de cuenta alumno
             Alumno::create([
                 'usuario_id' => $usuario->id,
-                'codigo_institucional' => $request->codigo_institucional
+                'codigo_institucional' => $request->codigo_institucional,
+                'carrera_id' => $request->carrera_id
             ]);
         }
 
-        if ($request->rol_id == 1) {
+        if ($request->rol_id == 1) { //Registro de cuenta administrador
             Administrador::create([
                 'usuario_id' => $usuario->id
             ]);
