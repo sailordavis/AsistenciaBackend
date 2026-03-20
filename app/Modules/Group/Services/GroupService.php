@@ -126,58 +126,89 @@ public function procesarCSV($file)
 
 
 
-      private function obtenerOCrearSegunTabla($tabla, $data)
+    private function obtenerOCrearSegunTabla($tabla, $data)
 {
     switch ($tabla) {
 
-        case 'unidad_academicas':
-            $registro = DB::table($tabla)
-                ->where('nombre', $data['nombre'])
-                ->first();
-
-            if ($registro) return $registro->id;
-
-            return DB::table($tabla)->insertGetId([
-               'nombre' => $data['nombre'],
-              'tipo_unidad_id' =>  $this->obtenerOCrearSegunTabla('tipo_unidads', [
-                'nombre' => $data['tipoUnidadNombre']
-              ])
-              ]);
-           
+        //  TABLAS SIMPLES (solo nombre)
         case 'carreras':
         case 'tipo_unidads':
+
+            $nombre = $this->normalizarTexto($data['nombre']);
+
             $registro = DB::table($tabla)
-                ->where('nombre', $data['nombre'])
+                ->whereRaw('LOWER(nombre) = ?', [$nombre])
                 ->first();
 
             if ($registro) return $registro->id;
 
             return DB::table($tabla)->insertGetId([
-                'nombre' => $data['nombre']
+                'nombre' => $nombre,
+                'created_at' => now(),
+                'updated_at' => now()
             ]);
 
-        case 'periodo_academicos':
+        //  UNIDAD ACADÉMICA (depende de tipo_unidad)
+        case 'unidad_academicas':
+
+            $nombre = $this->normalizarTexto($data['nombre']);
+            $tipoUnidadNombre = $this->normalizarTexto($data['tipoUnidadNombre']);
+
+            $tipoUnidadId = $this->obtenerOCrearSegunTabla('tipo_unidads', [
+                'nombre' => $tipoUnidadNombre
+            ]);
+
             $registro = DB::table($tabla)
-                ->where('nombre', $data['nombre'])
+                ->whereRaw('LOWER(nombre) = ?', [$nombre])
+                ->where('tipo_unidad_id', $tipoUnidadId)
                 ->first();
 
             if ($registro) return $registro->id;
 
-            // Validacion de campos exclusivos de tabla periodo_academicos
+            return DB::table($tabla)->insertGetId([
+                'nombre' => $nombre,
+                'tipo_unidad_id' => $tipoUnidadId,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+
+        //  PERIODO ACADÉMICO (con fechas)
+        case 'periodo_academicos':
+
+            $nombre = $this->normalizarTexto($data['nombre']);
+
+            $registro = DB::table($tabla)
+                ->whereRaw('LOWER(nombre) = ?', [$nombre])
+                ->first();
+
+            if ($registro) return $registro->id;
+
             if (!isset($data['fecha_inicio']) || !isset($data['fecha_fin'])) {
                 throw new \Exception("Periodo requiere fechas");
             }
 
-           $activo = now()->between($data['fecha_inicio'], $data['fecha_fin']);
+            $activo = now()->between($data['fecha_inicio'], $data['fecha_fin']);
 
-    return DB::table($tabla)->insertGetId([
-        'nombre' => $data['nombre'],
-        'fecha_inicio' => $data['fecha_inicio'],
-        'fecha_fin' => $data['fecha_fin'],
-        'activo' => $activo
-    ]);
+            return DB::table($tabla)->insertGetId([
+                'nombre' => $nombre,
+                'fecha_inicio' => $data['fecha_inicio'],
+                'fecha_fin' => $data['fecha_fin'],
+                'activo' => $activo,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+
         default:
-            throw new \Exception("Tabla no soportada");
+            throw new \Exception("Tabla no soportada: " . $tabla);
     }
+}
+
+private function normalizarTexto($texto)
+{
+    $texto = trim($texto);
+    $texto = strtolower($texto);
+    $texto = preg_replace('/\s+/', ' ', $texto);
+
+    return $texto;
 }
 }
