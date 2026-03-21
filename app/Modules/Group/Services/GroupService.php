@@ -63,7 +63,9 @@ public function procesarCSV($file)
             if (!strtotime($fechaInicio) || !strtotime($fechaFin)) {
                 throw new \Exception("Fechas inválidas");
             }
-
+            //Seccion de codigo donde se obtendran los id's de otras tablas
+            //para la creacion de los campos de la tabla grupos
+            //en caso contrario se crearan esos campos 
             //  Unidad académica
             $unidadId = $this->obtenerOCrearSegunTabla('unidad_academicas', [
                 'nombre' => $unidadNombre,
@@ -126,71 +128,80 @@ public function procesarCSV($file)
 
 
 
-    private function obtenerOCrearSegunTabla($tabla, $data)
+   private function obtenerOCrearSegunTabla($tabla, $data)
 {
     switch ($tabla) {
 
-        //  TABLAS SIMPLES (solo nombre)
+        //  TABLAS SIMPLES
         case 'carreras':
         case 'tipo_unidads':
 
-            $nombre = $this->normalizarTexto($data['nombre']);
+            $nombreInput = $this->normalizarTexto($data['nombre']);
 
-            $registro = DB::table($tabla)
-                ->whereRaw('LOWER(nombre) = ?', [$nombre])
-                ->first();
+            //  Buscar si se encuentra la columna en la base de datos
+            $registros = DB::table($tabla)->get();
 
-            if ($registro) return $registro->id;
+            foreach ($registros as $registro) {
+                if ($this->normalizarTexto($registro->nombre) === $nombreInput) {
+                    return $registro->id;
+                }
+            }
 
-            return DB::table($tabla)->insertGetId([
-                'nombre' => $nombre,
-                'created_at' => now(),
-                'updated_at' => now()
-            ]);
+            throw new \Exception("El valor no existe en {$tabla}: " . $data['nombre']);
 
-        //  UNIDAD ACADÉMICA (depende de tipo_unidad)
+        //  UNIDAD ACADÉMICA
         case 'unidad_academicas':
 
-            $nombre = $this->normalizarTexto($data['nombre']);
+            $nombreInput = $this->normalizarTexto($data['nombre']);
             $tipoUnidadNombre = $this->normalizarTexto($data['tipoUnidadNombre']);
 
             $tipoUnidadId = $this->obtenerOCrearSegunTabla('tipo_unidads', [
                 'nombre' => $tipoUnidadNombre
             ]);
 
-            $registro = DB::table($tabla)
-                ->whereRaw('LOWER(nombre) = ?', [$nombre])
-                ->where('tipo_unidad_id', $tipoUnidadId)
-                ->first();
+           
+              
 
-            if ($registro) return $registro->id;
+            $registros = DB::table($tabla)
+                ->where('tipo_unidad_id', $tipoUnidadId)
+                ->get();
+
+            foreach ($registros as $registro) {
+                if ($this->normalizarTexto($registro->nombre) === $nombreInput) {
+                    return $registro->id;
+                }
+            }
 
             return DB::table($tabla)->insertGetId([
-                'nombre' => $nombre,
+                'nombre' => $data['nombre'], //  se guarda original
                 'tipo_unidad_id' => $tipoUnidadId,
                 'created_at' => now(),
                 'updated_at' => now()
             ]);
 
-        //  PERIODO ACADÉMICO (con fechas)
+        //  PERIODO ACADÉMICO
         case 'periodo_academicos':
 
-            $nombre = $this->normalizarTexto($data['nombre']);
-
-            $registro = DB::table($tabla)
-                ->whereRaw('LOWER(nombre) = ?', [$nombre])
-                ->first();
-
-            if ($registro) return $registro->id;
-
-            if (!isset($data['fecha_inicio']) || !isset($data['fecha_fin'])) {
+             if (!isset($data['fecha_inicio']) || !isset($data['fecha_fin'])) {
                 throw new \Exception("Periodo requiere fechas");
             }
+
+            $nombreInput = $this->normalizarTexto($data['nombre']);
+
+            $registros = DB::table($tabla)->get();
+
+            foreach ($registros as $registro) {
+                if ($this->normalizarTexto($registro->nombre) === $nombreInput) {
+                    return $registro->id;
+                }
+            }
+
+           
 
             $activo = now()->between($data['fecha_inicio'], $data['fecha_fin']);
 
             return DB::table($tabla)->insertGetId([
-                'nombre' => $nombre,
+                'nombre' => $data['nombre'], //  original
                 'fecha_inicio' => $data['fecha_inicio'],
                 'fecha_fin' => $data['fecha_fin'],
                 'activo' => $activo,
@@ -207,6 +218,8 @@ private function normalizarTexto($texto)
 {
     $texto = trim($texto);
     $texto = strtolower($texto);
+     // Quitar acentos
+    $texto = iconv('UTF-8', 'ASCII//TRANSLIT', $texto);
     $texto = preg_replace('/\s+/', ' ', $texto);
 
     return $texto;
