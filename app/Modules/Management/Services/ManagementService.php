@@ -7,11 +7,11 @@ use Illuminate\Support\Str;
 use App\Models\Usuario;
 use App\Models\Docente;
 use App\Models\Alumno;
+use Exception;
 
 class ManagementService{
 
 
-   
     public function procesarCSVDocentes($file)
 {
     $handle = fopen($file->getRealPath(), 'r');
@@ -20,14 +20,15 @@ class ManagementService{
 
     $errores = [];
     $creados = 0;
+    $procesados = 0;
     $credenciales = [];
 
     while (($data = fgetcsv($handle, 1000, ",")) !== false) {
 
-        DB::beginTransaction();
+        DB::beginTransaction(); 
 
         try {
-
+            $procesados++;
             if (count($data) < 4) {
                 throw new \Exception("Columnas incompletas");
             }
@@ -46,24 +47,24 @@ class ManagementService{
             if (!$this->validarCorreoDocente($correo)) {
                 throw new \Exception("Formato de correo invalido");
             }
-            //Evitar duplicados
-            if (Usuario::whereRaw('LOWER(correoInstitucional) = ?', [$correo])->exists()) {
-                throw new \Exception("Correo ya registrado");
+              //  Evitar duplicados 
+             if (Usuario::whereRaw('LOWER("correoInstitucional") = ?', [strtolower($correo)])->exists()) {
+            throw new \Exception("Correo ya registrado");
             }
 
              $passwordPlano = Str::random(10);
 
             //  Crear usuario 
             $usuario = Usuario::create([
-                'nombre' => $nombre,
-                'apellidos' => $apellidos,
-                'correoInstitucional' => $correo, 
+                'nombre' => trim($nombre),
+                'apellidos' => trim($apellidos),
+                'correoInstitucional' => trim($correo), 
                 'password' => $passwordPlano,
                 'rol_id' => 2 //rol docente
             ]);
 
             $credenciales[] = [
-           'correo' => $usuario->correoInstitucional,
+            'correo' => $usuario->correoInstitucional,
             'password' => $passwordPlano
              ];
 
@@ -97,6 +98,7 @@ class ManagementService{
     return [
         'tipo' => 'docentes',
         'creados' => $creados,
+        'filas_procesadas' =>$procesados,
         'credenciales' => $credenciales,
         'errores' => $errores
     ];
@@ -113,6 +115,7 @@ class ManagementService{
 
     $errores = [];
     $creados = 0;
+    $procesados= 0;
     $credenciales = [];
 
     while (($data = fgetcsv($handle, 1000, ",")) !== false) {
@@ -120,6 +123,8 @@ class ManagementService{
         DB::beginTransaction();
 
         try {
+            
+        $procesados++;
 
             if (count($data) < 5) {
                 throw new \Exception("Columnas incompletas");
@@ -142,9 +147,9 @@ class ManagementService{
             }
 
             //  Evitar duplicados 
-           if (Usuario::whereRaw('LOWER(correoInstitucional) = ?', [$correo])->exists()) {
-           throw new \Exception("Correo ya registrado");
-}
+          if (Usuario::whereRaw('LOWER("correoInstitucional") = ?', [strtolower($correo)])->exists()) {
+         throw new \Exception("Correo ya registrado");
+         }
 
             //  Buscar carrera 
             $carreraInput = $this->normalizarTexto($carrera);
@@ -166,9 +171,9 @@ class ManagementService{
 
             //  Crear usuario
             $usuario = Usuario::create([
-                'nombre' => $nombre,
-                'apellidos' =>$apellidos,
-                'correoInstitucional' => $correo, 
+                'nombre' => trim($nombre),
+                'apellidos' =>trim($apellidos),
+                'correoInstitucional' => trim($correo), 
                 'password' => $passwordPlano,
                 'rol_id' => 3 // alumno
             ]);
@@ -186,7 +191,7 @@ class ManagementService{
             //  Crear alumno
             Alumno::create([
                 'usuario_id' => $usuario->id,
-                'codigo_institucional' => $codigo_institucional,
+                'codigo_institucional' => trim($codigo_institucional),
                 'carrera_id' => $carreraId
             ]);
 
@@ -209,6 +214,7 @@ class ManagementService{
     return [
         'tipo' => 'alumnos',
         'creados' => $creados,
+        'filas_procesadas'=> $procesados,
         'credenciales' => $credenciales,
         'errores' => $errores
     ];
