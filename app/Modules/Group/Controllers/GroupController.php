@@ -25,7 +25,7 @@ class GroupController extends Controller
                 'file' => 'required|file|mimes:csv,txt'
             ]);
 
-            $file = $request->file('archivo');
+            $file = $request->file('file');
 
             //  Llamar al service
             $resultado = $this->groupService->procesarCSV($file);
