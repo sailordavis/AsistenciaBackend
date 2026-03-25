@@ -22,7 +22,7 @@ class GroupController extends Controller
 
             //  Validar request
             $request->validate([
-                'archivo' => 'required|file|mimes:csv,txt'
+                'file' => 'required|file|mimes:csv,txt'
             ]);
 
             $file = $request->file('archivo');
