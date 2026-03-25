@@ -13,6 +13,8 @@ use App\Models\Administrador;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\URL;
 
 class AuthController extends Controller
 {
@@ -126,7 +128,7 @@ public function me(Request $request)
     ]);
 }
 
-public function forgotPassword(Request $request)
+public function forgotPasswordOld(Request $request)
 {
     $request->validate([
         'correoInstitucional' => 'required|email'
@@ -159,7 +161,7 @@ public function forgotPassword(Request $request)
     ]);
 }
 
-public function resetPassword(Request $request)
+public function resetPasswordOld(Request $request)
 {
     $request->validate([
         'correoInstitucional' => 'required|email',
@@ -196,7 +198,92 @@ public function resetPassword(Request $request)
 }
 
 
+public function forgotPassword(Request $request)
+{
+    $request->validate([
+        'correoInstitucional' => 'required|email'
+    ]);
 
+    $usuario = Usuario::where(
+        'correoInstitucional',
+        $request->correoInstitucional
+    )->first();
+
+    if (!$usuario) {
+        return response()->json([
+            'message' => 'Usuario no encontrado'
+        ], 404);
+    }
+
+    $token = Str::random(60);
+
+    DB::table('password_reset_tokens')->updateOrInsert(
+        ['email' => $request->correoInstitucional],
+        [
+            'token' => $token,
+            'created_at' => Carbon::now()
+        ]
+    );
+
+    //  LINK que recibirá el usuario
+    $link = url("/reset-password?token=$token&email={$request->correoInstitucional}");
+
+    //  Enviar correo
+    Mail::raw("Da clic en el siguiente enlace para restablecer tu contraseña: $link", function ($message) use ($request) {
+        $message->to($request->correoInstitucional)
+                ->subject('Recuperación de contraseña');
+    });
+
+    return response()->json([
+        'message' => 'Se ha enviado un enlace a tu correo'
+    ]);
+}
+
+
+public function resetPassword(Request $request)
+{
+    $request->validate([
+        'correoInstitucional' => 'required|email',
+        'token' => 'required',
+        'password' => 'required|min:6|confirmed'
+    ]);
+
+    $reset = DB::table('password_reset_tokens')
+        ->where('email', $request->correoInstitucional)
+        ->where('token', $request->token)
+        ->first();
+
+    if (!$reset) {
+        return response()->json([
+            'message' => 'Token inválido'
+        ], 400);
+    }
+
+   
+    if (Carbon::parse($reset->created_at)->addMinutes(60)->isPast()) {
+        return response()->json([
+            'message' => 'Token expirado'
+        ], 400);
+    }
+
+    $usuario = Usuario::where(
+        'correoInstitucional',
+        $request->correoInstitucional
+    )->first();
+
+    
+    $usuario->password = $request->password;
+    $usuario->save();
+
+    // eliminar token usado
+    DB::table('password_reset_tokens')
+        ->where('email', $request->correoInstitucional)
+        ->delete();
+
+    return response()->json([
+        'message' => 'Contraseña actualizada correctamente'
+    ]);
+}
 
 
 }
