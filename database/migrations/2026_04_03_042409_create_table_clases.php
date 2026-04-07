@@ -11,14 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('periodo_academicos', function (Blueprint $table) {
+        Schema::create('clases', function (Blueprint $table) {
         $table->id();
-        $table->string('nombre');
-        $table->date('fecha_inicio');
-        $table->date('fecha_fin');
-        $table->boolean('activo')->default(true);
+        
+        $table->string('nombre'); // varchar
+        $table->unsignedBigInteger('docente_id');
+        $table->text('descripcion')->nullable();
+
         $table->timestamps();
 
+        // Foreign key
+        $table->foreign('docente_id')
+              ->references('id')
+              ->on('docentes')
+              ->onDelete('cascade');
         });
     }
 
@@ -27,6 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('periodo_academicos');
+        Schema::dropIfExists('clases');
     }
 };

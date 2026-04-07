@@ -11,10 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tipo_unidads', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-            $table->string("nombre");
+        Schema::table('clases', function (Blueprint $table) {
+            $table->dropColumn('descripcion');
         });
     }
 
@@ -23,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tipo_unidads');
+        Schema::table('clases', function (Blueprint $table) {
+            $table->text('descripcion')->nullable();
+        });
     }
 };

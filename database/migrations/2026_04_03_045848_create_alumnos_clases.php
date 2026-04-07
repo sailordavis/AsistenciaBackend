@@ -11,17 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('grupo__alumnos', function (Blueprint $table) {
-            $table->foreignId('grupo_id')
-              ->constrained('grupos')
-              ->cascadeOnDelete();
-
-            $table->foreignId('alumno_id')
+        Schema::create('alumnos_clases', function (Blueprint $table) {
+             $table->foreignId('alumno_id')
               ->constrained('alumnos')
               ->cascadeOnDelete();
 
-            $table->primary(['grupo_id', 'alumno_id']);
-            $table->timestamps();
+        $table->foreignId('clase_id')
+              ->constrained('clases')
+              ->cascadeOnDelete();
+        // Clave primaria compuesta
+        $table->primary(['alumno_id', 'clase_id']);
+        $table->timestamps();
         });
     }
 
@@ -30,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('grupo__alumnos');
+        Schema::dropIfExists('alumnos_clases');
     }
 };
