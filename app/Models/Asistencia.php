@@ -8,24 +8,18 @@ class Asistencia extends Model
 {
     protected $table = 'asistencias';
 
-    protected $fillable = [
+      protected $fillable = [
         'evento_id',
         'alumno_id',
-        'hora_entrada',
-        'hora_salida'
+        'estado',
+        'hora_registro'
     ];
 
-   
-
-    // Una asistencia pertenece a un evento
-    public function evento()
-    {
-        return $this->belongsTo(Evento::class);
+    public function alumno(){
+        return $this->belongsTo(Alumno::class);
     }
 
-    // Una asistencia pertenece a un alumno (usuario)
-    public function alumno()
-    {
-        return $this->belongsTo(Alumno::class);
+    public function evento(){
+        return $this->belongsTo(Evento::class);
     }
 }

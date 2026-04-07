@@ -10,37 +10,26 @@ class Evento extends Model
 
     protected $fillable = [
         'titulo',
-        'descripcion',
-        'ubicacion',
         'fecha',
         'hora_inicio',
         'hora_fin',
-        'cupo',
-        'imagen',
-        'creador_id'
+        'tipo',
+        'clase_id',
+        'creador_id',
+        'token_evento'
     ];
 
-    /**
-     * Relación con la tabla usuario
-     */
     public function usuario()
     {
         return $this->belongsTo(Usuario::class, 'creador_id');
     }
 
-      /**
-     * Relacion con la tabla grupos
-     */
-public function grupos()
-{
-    return $this->belongsToMany(Grupo::class);
-}
+    public function clase()
+    {
+        return $this->belongsTo(Clase::class);
+    }
 
-
-/**
- * Relacion con la tabla asistencia
- */
-public function asistencias(){
+    public function asistencias(){
     return $this->hasMany(Asistencia::class);
-}
+    }
 }

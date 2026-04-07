@@ -22,20 +22,14 @@ class Alumno extends Model
         return $this->belongsTo(Usuario::class);
     }
 
-    /**
-     * Relación con carrera
-     */
-    public function carrera()
-    {
-        return $this->belongsTo(Carrera::class);
-    }
+   
 
        /**
      * Relacion con grupo
      */
-    public function grupos()
+    public function clases()
     {
-    return $this->belongsToMany(Grupo::class);
+    return $this->belongsToMany(Clase::class);
     }
 
 

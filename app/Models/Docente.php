@@ -27,8 +27,8 @@ class Docente extends Model
    /**
     * Relacion con tabla grupos
     */
-   public function grupos()
+   public function clases()
    {
-    return $this->hasMany(Grupo::class);
+    return $this->hasMany(Clase::class);
    }
 }
