@@ -24,9 +24,14 @@ class Clase extends Model
     }
 
     public function alumnos()
-    {
-    return $this->belongsToMany(Alumno::class);
-    }
+{
+    return $this->belongsToMany(
+        Alumno::class,
+        'alumnos_clases',
+        'clase_id',
+        'alumno_id'
+    );
+}
 
 
 }

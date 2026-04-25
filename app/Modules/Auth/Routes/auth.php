@@ -6,7 +6,8 @@ use App\Modules\Auth\Controllers\AuthController;
 Route::prefix('auth')->group(function () {
 
     Route::post('/login', [AuthController::class, 'login']);
-    Route::post('/register', [AuthController::class, 'register']);
+    //Posiblemente se elimine en un futuro esta ruta
+    Route::post('/register', [AuthController::class, 'register']);  
 
     
     Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);

@@ -24,13 +24,18 @@ class Alumno extends Model
 
    
 
-       /**
-     * Relacion con grupo
+    /**
+     * Relacion con clase
      */
     public function clases()
-    {
-    return $this->belongsToMany(Clase::class);
-    }
+{
+    return $this->belongsToMany(
+        Clase::class,
+        'alumnos_clases',
+        'alumno_id',
+        'clase_id'
+    );
+}
 
 
 /**

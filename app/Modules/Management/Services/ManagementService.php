@@ -3,249 +3,127 @@
 namespace App\Modules\Management\Services;
 
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use App\Models\Usuario;
-use App\Models\Docente;
-use App\Models\Alumno;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Asistencia;
 use Exception;
 
 class ManagementService{
 
-
-    public function procesarCSVDocentes($file)
-{
-    $handle = fopen($file->getRealPath(), 'r');
-
-    fgetcsv($handle); // encabezado
-
-    $errores = [];
-    $creados = 0;
-    $procesados = 0;
-    $credenciales = [];
-
-    while (($data = fgetcsv($handle, 1000, ",")) !== false) {
-
-        DB::beginTransaction(); 
-
-        try {
-            $procesados++;
-            if (count($data) < 4) {
-                throw new \Exception("Columnas incompletas");
-            }
-
-            [
-                $nombre,
-                $apellidos,
-                $correo,
-                $numero_nomina
-            ] = $data;
-
-            //  Normalizacion para ingresar correo a la base de datos
-            $correo= $this->normalizarCorreo($correo);
-
-            //  Validar formato de correo docente
-            if (!$this->validarCorreoDocente($correo)) {
-                throw new \Exception("Formato de correo invalido");
-            }
-              //  Evitar duplicados 
-             if (Usuario::whereRaw('LOWER("correoInstitucional") = ?', [strtolower($correo)])->exists()) {
-            throw new \Exception("Correo ya registrado");
-            }
-
-             $passwordPlano = Str::random(10);
-
-            //  Crear usuario 
-            $usuario = Usuario::create([
-                'nombre' => trim($nombre),
-                'apellidos' => trim($apellidos),
-                'correoInstitucional' => trim($correo), 
-                'password' => $passwordPlano,
-                'rol_id' => 2 //rol docente
-            ]);
-
-            $credenciales[] = [
-            'correo' => $usuario->correoInstitucional,
-            'password' => $passwordPlano
-             ];
-
-            //  Validar duplicado de nómina
-            if (Docente::where('numero_nomina', $numero_nomina)->exists()) {
-                throw new \Exception("Número de nómina ya registrado");
-            }
-
-            //  Crear docente
-            Docente::create([
-                'usuario_id' => $usuario->id,
-                'numero_nomina' => trim($numero_nomina)
-            ]);
-
-            DB::commit();
-            $creados++;
-
-        } catch (\Exception $e) {
-
-            DB::rollBack();
-
-            $errores[] = [
-                'fila' => $data,
-                'error' => $e->getMessage()
-            ];
-        }
-    }
-
-    fclose($handle);
-
-    return [
-        'tipo' => 'docentes',
-        'creados' => $creados,
-        'filas_procesadas' =>$procesados,
-        'credenciales' => $credenciales,
-        'errores' => $errores
-    ];
-}
-
-            
-
-
-     public function procesarCSVAlumnos($file)
-{
-    $handle = fopen($file->getRealPath(), 'r');
-
-    fgetcsv($handle); // encabezado
-
-    $errores = [];
-    $creados = 0;
-    $procesados= 0;
-    $credenciales = [];
-
-    while (($data = fgetcsv($handle, 1000, ",")) !== false) {
-
-        DB::beginTransaction();
-
-        try {
-            
-        $procesados++;
-
-            if (count($data) < 5) {
-                throw new \Exception("Columnas incompletas");
-            }
-
-            [
-                $nombre,
-                $apellidos,
-                $correo,
-                $codigo_institucional,
-                $carrera
-            ] = $data;
-
-            //  Normalizar correo 
-            $correo = $this->normalizarCorreo($correo);
-
-            //  Validar formato alumno
-            if (!$this->validarCorreoAlumno($correo)) {
-                throw new \Exception("Formato de correo inválido");
-            }
-
-            //  Evitar duplicados 
-          if (Usuario::whereRaw('LOWER("correoInstitucional") = ?', [strtolower($correo)])->exists()) {
-         throw new \Exception("Correo ya registrado");
-         }
-
-            //  Buscar carrera 
-            $carreraInput = $this->normalizarTexto($carrera);
-            $carreras = DB::table('carreras')->get();
-
-            $carreraId = null;
-
-            foreach ($carreras as $carrera) {
-                if ($this->normalizarTexto($carrera->nombre) === $carreraInput) {
-                    $carreraId = $carrera->id;
-                    break;
-                }
-            }
-
-            if (!$carreraId) {
-                throw new \Exception("Carrera no encontrada: " . $carrera);
-            }
-            $passwordPlano = Str::random(10);
-
-            //  Crear usuario
-            $usuario = Usuario::create([
-                'nombre' => trim($nombre),
-                'apellidos' =>trim($apellidos),
-                'correoInstitucional' => trim($correo), 
-                'password' => $passwordPlano,
-                'rol_id' => 3 // alumno
-            ]);
-
-            $credenciales[] = [
-           'correo' => $usuario->correoInstitucional,
-            'password' => $passwordPlano
-             ];
-
-            //  Validar duplicado de código institucional
-            if (Alumno::where('codigo_institucional', $codigo_institucional)->exists()) {
-                throw new \Exception("Código institucional ya registrado");
-            }
-
-            //  Crear alumno
-            Alumno::create([
-                'usuario_id' => $usuario->id,
-                'codigo_institucional' => trim($codigo_institucional),
-                'carrera_id' => $carreraId
-            ]);
-
-            DB::commit();
-            $creados++;
-
-        } catch (\Exception $e) {
-
-            DB::rollBack();
-
-            $errores[] = [
-                'fila' => $data,
-                'error' => $e->getMessage()
-            ];
-        }
-    }
-
-    fclose($handle);
-
-    return [
-        'tipo' => 'alumnos',
-        'creados' => $creados,
-        'filas_procesadas'=> $procesados,
-        'credenciales' => $credenciales,
-        'errores' => $errores
-    ];
-}
-
-
-     
-private function normalizarTexto($texto)
+ // Listar usuarios
+    public function listarUsuarios()
     {
-        $texto = trim($texto);
-        $texto = strtolower($texto);
-        // Quitar acentos
-        $texto = iconv('UTF-8', 'ASCII//TRANSLIT', $texto);
-        $texto = preg_replace('/\s+/', ' ', $texto);
-        return $texto;
+        return Usuario::orderBy('created_at', 'desc')->get();
     }
 
-private function validarCorreoAlumno($correo)
+
+//  Mostrar usuario
+    public function mostrarUsuario($correoInstitucional)
+    {
+        
+        $usuario = Usuario::where('correoInstitucional', $correoInstitucional)->first();
+
+        if (!$usuario) {
+            throw new \Exception("Usuario no encontrado");
+        }
+
+        return $usuario;
+    }
+
+   
+
+     //  Eliminar usuario
+    public function eliminarUsuario($id)
+    {
+        $usuarioAuth = Auth::user();
+
+        if (!$usuarioAuth) {
+            throw new \Exception("Usuario no autenticado");
+        }
+
+        $usuario = Usuario::find($id);
+
+        if (!$usuario) {
+            throw new \Exception("Usuario no encontrado");
+        }
+
+        $usuario->delete();
+
+        return true;
+    }
+
+
+//Actualizar usuario
+public function actualizarUsuario($id, array $data)
 {
-    return preg_match('/^(za|zap)\d+@zapopan\.tecmm\.edu\.mx$/', $correo);
+    $usuarioAuth = Auth::user();
+
+    if (!$usuarioAuth) {
+        throw new \Exception("Usuario no autenticado");
+    }
+
+    $usuario = Usuario::find($id);
+
+    if (!$usuario) {
+        throw new \Exception("Usuario no encontrado");
+    }
+
+    // Solo admin puede modificar usuarios
+    if ($usuarioAuth->rol_id !== 1) {
+        throw new \Exception("No tienes permisos para modificar usuarios");
+    }
+
+  
+
+    //  Limpieza de campos opcionales
+    if (!isset($data['numero_nomina'])) {
+        unset($data['numero_nomina']);
+    }
+
+    if (!isset($data['codigo_institucional'])) {
+        unset($data['codigo_institucional']);
+    }
+
+    $usuario->update($data);
+
+    return $usuario;
 }
 
-private function validarCorreoDocente($correo)
-{
-    return preg_match('/^[a-z]+\.[a-z]+@zapopan\.tecmm\.edu\.mx$/', $correo);
-}
 
-private function normalizarCorreo($correo)
+   
+public function asistenciasPorEvento($eventoId)
 {
-    return strtolower(trim($correo));
+    $usuario = Auth::user();
+
+    if (!$usuario) {
+        throw new \Exception("Usuario no autenticado");
+    }
+
+    // Solo admin
+    if ($usuario->rol_id !== 1) {
+        throw new \Exception("No tienes permisos para ver asistencias globales");
+    }
+
+    $asistencias = Asistencia::with(['alumno.usuario'])
+        ->where('evento_id', $eventoId)
+        ->get();
+
+    if ($asistencias->isEmpty()) {
+        throw new \Exception("No hay asistencias para este evento");
+    }
+
+    //  Formato limpio 
+    return $asistencias->map(function ($asistencia) {
+        return [
+            'alumno_id' => $asistencia->alumno_id,
+            'nombre' => $asistencia->alumno->usuario->nombre ?? '',
+            'apellidos' => $asistencia->alumno->usuario->apellidos ?? '',
+            'estado' => $asistencia->estado,
+            'hora_registro' => $asistencia->hora_registro,
+        ];
+    });
 }
+  
 
 
 }
