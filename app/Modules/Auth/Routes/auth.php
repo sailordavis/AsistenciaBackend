@@ -20,9 +20,6 @@ Route::prefix('auth')->group(function () {
 
     });
     
-    //Ruta de api de prueba para probar el accesso a partes del sistema segun rol
-    Route::middleware(['auth:sanctum','role:1'])->get('/test-role', function () {
-    return response()->json(['mensaje' => 'Acceso permitido']);
-   });
+
 
 });

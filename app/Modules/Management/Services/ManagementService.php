@@ -4,33 +4,82 @@ namespace App\Modules\Management\Services;
 
 use Illuminate\Support\Facades\DB;
 use App\Models\Usuario;
+use App\Models\Docente;
+use App\Models\Alumno;
+use App\Models\Administrador;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Asistencia;
 use Exception;
 
 class ManagementService{
 
- // Listar usuarios
+ // Funcion para listar todos los usuarios 
     public function listarUsuarios()
     {
-        return Usuario::orderBy('created_at', 'desc')->get();
+        return Usuario::with('rol')
+        ->orderBy('created_at', 'desc')
+        ->get();
     }
 
 
-//  Mostrar usuario
-    public function mostrarUsuario($correoInstitucional)
+//  Mostrar usuario con correo proporcionado via url 
+    public function mostrarUsuario($correo)
     {
-        
-        $usuario = Usuario::where('correoInstitucional', $correoInstitucional)->first();
+        $usuario = Usuario::where('correoinstitucional', $correo)
+        ->first();
 
-        if (!$usuario) {
+    if (!$usuario) {
             throw new \Exception("Usuario no encontrado");
         }
 
-        return $usuario;
+    return $usuario;
     }
 
+    //Mostrar docente con nomina proporcionado via url 
+    public function mostrarDocente($nomina)
+{
+    $docente = Docente::with('usuario') // para traer nombre, correo, etc.
+        ->where('numero_nomina',$nomina)
+        ->first();
+
+    if (!$docente) {
+            throw new \Exception("Docente no encontrado");
+        }
+    
+        return $docente;
+}
+
+//Mostrar alumno con codigo proporcionado via url
+public function mostrarAlumno($codigo)
+{
+    $alumno = Alumno::with('usuario') // trae nombre, correo, etc.
+        ->where('codigo_institucional', $codigo)
+        ->first();
+
+    if (!$alumno) {
+            throw new \Exception("Alumno no encontrado");
+        }
+
+    return $alumno;
+}
+
+//Mostrar administrador con correo proporcionado via url
+public function mostrarAdministrador($correo)
+{
+     $administrador = Administrador::with('usuario')
+        ->where('correoinstitucional',$correo)
+        ->first();
+
+    if (!$administrador) {
+            throw new \Exception("Administrador no encontrado");
+        }
+
+    return $administrador;
+}
    
+
+
+    //Futuras funciones a editar o eliminar
 
      //  Eliminar usuario
     public function eliminarUsuario($id)

@@ -11,7 +11,6 @@ class Alumno extends Model
     protected $fillable = [
         'codigo_institucional',
         'usuario_id',
-         'carrera_id'
     ];
 
      /**
