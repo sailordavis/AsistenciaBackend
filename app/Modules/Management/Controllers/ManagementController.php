@@ -124,24 +124,10 @@ class ManagementController extends Controller
 }
 
       // Operacion GET: obtener un usuario en especifico (independiente del rol)/correo
-    public function buscarUsuario(Request $request, ManagementService $service)
+    public function buscarUsuario( ManagementService $service, $correo)
 {
     try {
-        $correo = $request->query('correo');
-
-        if (!$correo) {
-            return response()->json([
-                'error' => 'Debe proporcionar un correo institucional'
-            ], 400);
-        }
-
         $usuario = $service->mostrarUsuario($correo);
-
-        if ($usuario->isEmpty()) {
-            return response()->json([
-                'mensaje' => 'No se encontro ningun usuario con los datos que proporciono'
-            ], 404);
-        }
 
         return response()->json($usuario, 200);
 
@@ -153,52 +139,27 @@ class ManagementController extends Controller
 
 }
 //Operacio GET: obtener un docente en especifico /numero de nomina
-public function buscarDocente(Request $request, ManagementService $service)
+public function buscarDocente(ManagementService $service, $nomina)
 {
     try {
-        $nomina = $request->query('nomina');
-
-        if (!$nomina) {
-            return response()->json([
-                'error' => 'Debe proporcionar un número de nómina'
-            ], 400);
-        }
 
         $docente = $service->mostrarDocente($nomina);
-
-        if ($docente->isEmpty()) {
-            return response()->json([
-                'mensaje' => 'No se encontraro ningun docente con los datos que proporciono'
-            ], 404);
-        }
 
         return response()->json($docente, 200);
 
     } catch (\Exception $e) {
+
         return response()->json([
             'error' => $e->getMessage()
-        ], 500);
+        ], 404);
+
     }
 }
  //Operacion GET: obtener un alumno en especifico /codigo institucional
-  public function buscarAlumno(Request $request, ManagementService $service)
+  public function buscarAlumno( ManagementService $service, $codigo)
 {
     try {
-        $codigo = $request->query('codigo');
-
-        if (!$codigo) {
-            return response()->json([
-                'error' => 'Debe proporcionar un codigo institucional'
-            ], 400);
-        }
-
         $alumno = $service->mostrarAlumno($codigo);
-
-        if ($alumno->isEmpty()) {
-            return response()->json([
-                'mensaje' => 'No se encontro ningun alumno con los datos que proporciono'
-            ], 404);
-        }
 
         return response()->json($alumno, 200);
 
@@ -209,24 +170,10 @@ public function buscarDocente(Request $request, ManagementService $service)
     }
 }
  //Operacion GET: obtener un administrador en especifico /correo
-public function buscarAdministrador(Request $request, ManagementService $service)
+public function buscarAdministrador( ManagementService $service, $correo)
 {
     try {
-        $correo = $request->query('correo');
-
-        if (!$correo) {
-            return response()->json([
-                'error' => 'Debe proporcionar un correo institucional'
-            ], 400);
-        }
-
         $administrador = $service->mostrarAdministrador($correo);
-
-        if ($administrador->isEmpty()) {
-            return response()->json([
-                'mensaje' => 'No se encontro ningun administrador con los datos que proporciono'
-            ], 404);
-        }
 
         return response()->json($administrador, 200);
 
@@ -303,56 +250,14 @@ public function ActualizarCuenta(Request $request, $id)
     ], 200);
 }
 
-
-
-
-
-    //Funciones a editar o eliminar en un futuro
-    //PUT /usuarios/{id}
-    public function update(Request $request, $id, ManagementService $service)
-{
-    // Buscar usuario por correo
-   // $usuario = Usuario::where('correoInstitucional', $correoInstitucional)->firstOrFail();
-
-    // Obtener rol (request o BD)
-    $rol = $request->input('rol_id', $usuario->rol_id);
-
-    $data = $request->validate([
-        'nombre' => 'sometimes|string|max:255',
-        'apellidos' => 'sometimes|string|max:255',
-        'correoInstitucional' => 'sometimes|email|unique:usuarios,correoInstitucional,' . $id,
-        'password' => 'sometimes|string|min:6',
-        'rol_id' => 'sometimes|exists:rols,id',
-
-        'numero_nomina' => $rol == 2 ? 'required|string|max:50' : 'nullable',
-        'codigo_institucional' => $rol == 3 ? 'required|string|max:50' : 'nullable',
-    ]);
-
-    try {
-        $usuario = $service->actualizarUsuario($id, $data);
-
-        return response()->json([
-            'mensaje' => 'Usuario actualizado correctamente',
-            'usuario' => $usuario
-        ]);
-
-    } catch (\Exception $e) {
-        return response()->json([
-            'error' => $e->getMessage()
-        ], 400);
-    }
-}
-
-
- //  DELETE /usuarios/{id}
-    public function destroy($id, ManagementService $service)
+//Funcion para la gestion de las clases registradas en la clase
+//Operacion GET: MostrarClases del docente seleccionado via id por url 
+    public function mostrarClasesDocente(ClassService $service, $docenteId)
     {
         try {
-            $service->eliminarUsuario($id);
+            $clases = $service->mostrarClasesDocente($docenteId);
 
-            return response()->json([
-                'mensaje' => 'Usuario eliminado correctamente'
-            ]);
+            return response()->json($clases);
 
         } catch (\Exception $e) {
             return response()->json([
@@ -361,6 +266,16 @@ public function ActualizarCuenta(Request $request, $id)
         }
     }
 
+
+
+
+
+    
+   
+
+
+ 
+ //Funciones a editar o eliminar en un futuro
 
     public function asistenciasEvento($eventoId, ManagementService $service)
 {
@@ -377,14 +292,7 @@ public function ActualizarCuenta(Request $request, $id)
 }
 
 
-public function buscar(Request $request)
-{
-    $correoInstitucional = $request->input('correoInstitucional');
 
-    $usuario = Usuario::where('correoInstitucional', 'like', "%$correoInstitucional%")->first();
-
-    return response()->json($usuario);
-}
 
     
 

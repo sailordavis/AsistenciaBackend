@@ -8,31 +8,21 @@ use Exception;
 
 class ClassService
 {
-    //  Crear clase
-    public function crearClase(array $data)
+    //Mostrar  todas las clases del docente
+    public function mostrarClases($docenteId)
     {
-        $usuario = Auth::user();
-
-        if (!$usuario) {
-            throw new \Exception("Usuario no autenticado");
-        }
-
-        // Asignar docente automáticamente
-        $data['docente_id'] = $usuario->id;
-
-        return Clase::create($data);
-    }
-
-    //  Listar todas las clases
-    public function listarClases()
-    {
-        return Clase::orderBy('created_at', 'desc')->get();
+    // Retornar clases propias del docente
+    return Clase::where('docente_id', $docenteId)
+        ->orderBy('created_at', 'desc')
+        ->get();
     }
 
     //  Mostrar una clase
-    public function mostrarClase($nombre)
+    public function mostrarUnaClase($nombre,$docenteId)
     {
-         $clase = Clase::where('nombre', $nombre)->first();
+         $clase = Clase::where('nombre', $nombre)
+        ->where('docente_id', $docenteId)
+        ->first();
 
         if (!$clase) {
             throw new \Exception("Clase no encontrada");
@@ -41,49 +31,16 @@ class ClassService
         return $clase;
     }
 
-    //  Actualizar clase
-    public function actualizarClase($nombre, array $data)
+    //  Eliminar una clase
+    public function eliminarClase($id,$docenteId)
     {
-        $usuario = Auth::user();
-
-        if (!$usuario) {
-            throw new \Exception("Usuario no autenticado");
-        }
-
-        $clase = Clase::where('nombre', $nombre)->first();
+         $clase = Clase::where([
+         'id' => $id,
+        'docente_id' => $docenteId
+          ])->first();
 
         if (!$clase) {
             throw new \Exception("Clase no encontrada");
-        }
-
-        // Validar que solo el docente pueda editar
-        if ($clase->docente_id !== $usuario->id) {
-            throw new \Exception("No tienes permiso para editar esta clase");
-        }
-
-        $clase->update($data);
-
-        return $clase;
-    }
-
-    //  Eliminar clase
-    public function eliminarClase($nombre)
-    {
-        $usuario = Auth::user();
-
-        if (!$usuario) {
-            throw new \Exception("Usuario no autenticado");
-        }
-
-        $clase = Clase::where('nombre', $nombre)->first();
-
-        if (!$clase) {
-            throw new \Exception("Clase no encontrada");
-        }
-
-        // Validar propietario
-        if ($clase->docente_id !== $usuario->id) {
-            throw new \Exception("No tienes permiso para eliminar esta clase");
         }
 
         $clase->delete();
@@ -91,44 +48,41 @@ class ClassService
         return true;
     }
 
-     public function listaAlumnosPorClase($nombre)
+    //Actualizar una clase 
+    public function actualizarClase($id, $docenteId, $data)
 {
-    // Buscar por nombre 
-    $clase = Clase::where('nombre', $nombre)->first();
+    $clase = Clase::where('id', $id)
+        ->where('docente_id', $docenteId)
+        ->first();
 
     if (!$clase) {
         throw new \Exception("Clase no encontrada");
     }
 
-    // IDs de alumnos en la clase
-    $alumnosEnClase = $clase->alumnos()->pluck('alumnos.id')->toArray();
-
-    // Todos los alumnos
-    $alumnos = Alumno::with('usuario')->get();
-
-    // Formato tipo checklist
-    $resultado = $alumnos->map(function ($alumno) use ($alumnosEnClase) {
-        return [
-            'codigo_institucional' => $alumno->codigo_institucional,
-            'nombre' => $alumno->usuario->nombre ?? '',
-            'apellidos' => $alumno->usuario->apellidos ?? '',
-            'checked' => in_array($alumno->id, $alumnosEnClase)
-        ];
-    });
-
-    return $resultado;
-}
-
-
-public function mostrarClasePorId($id)
-{
-    $clase = Clase::find($id);
-
-    if (!$clase) {
-        throw new \Exception("Clase no encontrada");
-    }
+    $clase->update($data);
 
     return $clase;
 }
+
+
+
+   //Mostrar listas de alumnos por clase
+
+   public function mostrarAlumnosClase($claseId, $docenteId)
+{
+    $clase = Clase::with('alumnos.usuario')
+        ->where('id', $claseId)
+        ->where('docente_id', $docenteId)
+        ->first();
+
+    if (!$clase) {
+        throw new \Exception("Clase no encontrada");
+    }
+
+    return $clase->alumnos;
+}
+
+
+
 
 }

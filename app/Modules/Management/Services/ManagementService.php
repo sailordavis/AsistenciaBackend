@@ -67,8 +67,10 @@ public function mostrarAlumno($codigo)
 public function mostrarAdministrador($correo)
 {
      $administrador = Administrador::with('usuario')
-        ->where('correoinstitucional',$correo)
-        ->first();
+    ->whereHas('usuario', function ($query) use ($correo) {
+        $query->where('correoinstitucional', $correo);
+    })
+    ->first();
 
     if (!$administrador) {
             throw new \Exception("Administrador no encontrado");
@@ -76,70 +78,20 @@ public function mostrarAdministrador($correo)
 
     return $administrador;
 }
+
+//Mostrar  todas las clases del docente seleccionado
+    public function mostrarClasesDocente($docenteId)
+    {
+    // Retornar clases propias del docente
+    return Clase::where('docente_id', $docenteId)
+        ->orderBy('created_at', 'desc')
+        ->get();
+    }
    
 
 
     //Futuras funciones a editar o eliminar
 
-     //  Eliminar usuario
-    public function eliminarUsuario($id)
-    {
-        $usuarioAuth = Auth::user();
-
-        if (!$usuarioAuth) {
-            throw new \Exception("Usuario no autenticado");
-        }
-
-        $usuario = Usuario::find($id);
-
-        if (!$usuario) {
-            throw new \Exception("Usuario no encontrado");
-        }
-
-        $usuario->delete();
-
-        return true;
-    }
-
-
-//Actualizar usuario
-public function actualizarUsuario($id, array $data)
-{
-    $usuarioAuth = Auth::user();
-
-    if (!$usuarioAuth) {
-        throw new \Exception("Usuario no autenticado");
-    }
-
-    $usuario = Usuario::find($id);
-
-    if (!$usuario) {
-        throw new \Exception("Usuario no encontrado");
-    }
-
-    // Solo admin puede modificar usuarios
-    if ($usuarioAuth->rol_id !== 1) {
-        throw new \Exception("No tienes permisos para modificar usuarios");
-    }
-
-  
-
-    //  Limpieza de campos opcionales
-    if (!isset($data['numero_nomina'])) {
-        unset($data['numero_nomina']);
-    }
-
-    if (!isset($data['codigo_institucional'])) {
-        unset($data['codigo_institucional']);
-    }
-
-    $usuario->update($data);
-
-    return $usuario;
-}
-
-
-   
 public function asistenciasPorEvento($eventoId)
 {
     $usuario = Auth::user();

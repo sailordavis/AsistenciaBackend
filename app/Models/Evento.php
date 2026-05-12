@@ -32,4 +32,14 @@ class Evento extends Model
     public function asistencias(){
     return $this->hasMany(Asistencia::class);
     }
+
+    public function registradores()
+{
+    return $this->belongsToMany(
+        Usuario::class,
+        'evento_registradores',
+        'evento_id',
+        'usuario_id'
+    );
+}
 }

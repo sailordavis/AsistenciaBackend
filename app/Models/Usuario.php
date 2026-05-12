@@ -61,13 +61,23 @@ public function alumno(){
     return $this->hasOne(Alumno::class);
 }
 
-/**
+    /**
      * Relación con la tabla eventos
      */
     public function eventos()
     {
         return $this->hasMany(Evento::class, 'creador_id');
     }
+
+    public function eventosRegistrados()
+{
+    return $this->belongsToMany(
+        Evento::class,
+        'evento_registradores',
+        'usuario_id',
+        'evento_id'
+    );
+}
 
     
 
