@@ -95,29 +95,33 @@ class ManagementController extends Controller
         }
     }
    // Operacion GET:  obtener todos los usuarios segun rol indicado
-   public function listarUsuariosRol(ManagementService $service, $rolId)
+   public function listarUsuariosRol( $rolId)
 {
     try {
-        // Validar que el rol sea válido
-        if (!in_array($rolId, [1, 2, 3])) {
-            throw new \Exception("Rol inválido. Usa 1=Admin, 2=Docente, 3=Alumno");
+        // Roles permitidos
+        $rolesPermitidos = [1, 2, 3];
+
+        if (!in_array($rolId, $rolesPermitidos)) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Rol inválido'
+            ], 400);
+
         }
 
         // Obtener usuarios por rol
         $usuarios = Usuario::where('rol_id', $rolId)->get();
 
-        // Validar si hay resultados
-        if ($usuarios->isEmpty()) {
-            return response()->json([
-                'mensaje' => 'No hay usuarios registrados con este rol'
-            ], 404);
-        }
-
-        // Retornar lista
-        return response()->json($usuarios, 200);
+       return response()->json([
+            'success' => true,
+            'data' => $usuarios
+        ], 200);
 
     } catch (\Exception $e) {
-        return response()->json([
+         return response()->json([
+            'success' => false,
+            'message' => 'Error al obtener usuarios',
             'error' => $e->getMessage()
         ], 500);
     }

@@ -152,8 +152,6 @@ class ClassController extends Controller
 }
 
 
-
-
 //Funciones auxiliares
 private function getDocenteId()
 {

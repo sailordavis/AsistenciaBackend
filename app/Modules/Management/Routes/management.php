@@ -18,7 +18,7 @@ Route::middleware(['auth:sanctum','role:1'])->group(function () {
 
      //Seccion gestion de las clases parte del sistema 
      Route::get('/mostrarClasesDocente/{docenteId}',[ManagementController::class, 'mostrarClasesDocente']);
-
+     
      //Endpoints a editar o eliminar 
      Route::get('/asistenciasEvento{eventoId}',[ManagementController::class, 'asistenciasEvento']);
     });

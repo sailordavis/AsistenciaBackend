@@ -16,7 +16,11 @@ class Evento extends Model
         'tipo',
         'clase_id',
         'creador_id',
-        'token_evento'
+        'token_evento',
+        'latitud',
+        'longitud',
+         'radio_permitido',
+         'direccion_texto',
     ];
 
     public function usuario()

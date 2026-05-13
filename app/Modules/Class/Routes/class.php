@@ -15,6 +15,9 @@ Route::middleware(['auth:sanctum','role:2'])->group(function () {
         Route::get('/mostrarAlumnosClase/{claseId}',[ClassController::class, 'mostrarAlumnosClase']);
 
         
+        
+
+        
     });
 
 });

@@ -5,13 +5,21 @@ use App\Modules\Event\Controllers\EventController;
 
 Route::prefix('event')->group(function (){
 
-Route::middleware(['auth:sanctum','role:1|2'])->group(function () {
-        Route::post('/crearEvento', [EventController::class, 'crearEvento']);
-        Route::get('/index',[EventController::class, 'index']);
-        Route::get('/show{titulo}',[EventController::class, 'show']);
-        Route::put('/update{titulo}',[EventController::class, 'update']);
-        Route::delete('/destroy{titulo}',[EventController::class, 'destroy']);
+Route::middleware(['auth:sanctum','role:2'])->group(function () {
+        Route::post('/crearEventoClase', [EventController::class, 'crearEventoClase']);
+        Route::get('/obtenerEventosClase/{claseId}',[EventController::class, 'obtenerEventosClase']);
+        Route::delete('/eliminarEventoClase/{eventoId}',[EventController::class, 'eliminarEventoClase']);
+        Route::put('/actualizarEventoClase/{eventoId}',[EventController::class, 'actualizarEventoClase']); 
+        Route::get('/mostrarEventosAsignados',[EventController::class, 'mostrarEventosAsignados']); 
+});
 
-    });
+Route::middleware(['auth:sanctum','role:1'])->group(function () {
+        Route::post('/crearEventoGeneral', [EventController::class, 'crearEventoGeneral']);
+        Route::get('/obtenerEventosAdministrador',[EventController::class, 'obtenerEventosAdministrador']);
+        Route::get('/obtenerEventosGenerales',[EventController::class, 'obtenerEventosGenerales']);
+        Route::put('/actualizarEventoGeneral/{eventoId}',[EventController::class, 'actualizarEventoGeneral']);
+        Route::delete('/eliminarEventoGeneral/{eventoId}',[EventController::class, 'eliminarEventoGeneral']);
+        Route::post('/asignarRegistradorEvento', [EventController::class, 'asignarRegistradorEvento']);
+});
 
 });
