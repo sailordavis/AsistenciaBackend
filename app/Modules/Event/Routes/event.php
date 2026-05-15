@@ -5,7 +5,7 @@ use App\Modules\Event\Controllers\EventController;
 
 Route::prefix('event')->group(function (){
 
-Route::middleware(['auth:sanctum','role:2'])->group(function () {
+Route::middleware(['auth:sanctum','role:2'])->group(function () { //Rol Docente
         Route::post('/crearEventoClase', [EventController::class, 'crearEventoClase']);
         Route::get('/obtenerEventosClase/{claseId}',[EventController::class, 'obtenerEventosClase']);
         Route::delete('/eliminarEventoClase/{eventoId}',[EventController::class, 'eliminarEventoClase']);
@@ -13,7 +13,7 @@ Route::middleware(['auth:sanctum','role:2'])->group(function () {
         Route::get('/mostrarEventosAsignados',[EventController::class, 'mostrarEventosAsignados']); 
 });
 
-Route::middleware(['auth:sanctum','role:1'])->group(function () {
+Route::middleware(['auth:sanctum','role:1'])->group(function () { //Rol administrador
         Route::post('/crearEventoGeneral', [EventController::class, 'crearEventoGeneral']);
         Route::get('/obtenerEventosAdministrador',[EventController::class, 'obtenerEventosAdministrador']);
         Route::put('/actualizarEventoGeneral/{eventoId}',[EventController::class, 'actualizarEventoGeneral']);

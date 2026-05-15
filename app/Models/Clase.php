@@ -20,7 +20,7 @@ class Clase extends Model
 
     public function eventos()
     {
-        return $this->hasMany(Evento::class);
+        return $this->hasMany(Evento::class, 'clase_id');
     }
 
     public function alumnos()

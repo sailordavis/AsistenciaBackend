@@ -30,7 +30,7 @@ class Evento extends Model
 
     public function clase()
     {
-        return $this->belongsTo(Clase::class);
+        return $this->belongsTo(Clase::class,'clase_id');
     }
 
     public function asistencias(){

@@ -96,7 +96,7 @@ public function obtenerAsistenciasEventosGenerales(
     $asistencias = Asistencia::with([
 
         'evento',
-        'evento.creador'
+        'evento.usuario'
 
     ])
     ->where(

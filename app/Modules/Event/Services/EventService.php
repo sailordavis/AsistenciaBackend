@@ -212,7 +212,7 @@ public function mostrarEventosAsignados($usuarioId)
     })
     ->with([
         'clase',
-        'creador'
+        'usuario'
     ])
     ->orderBy('fecha', 'asc')
     ->orderBy('hora_inicio', 'asc')
@@ -419,7 +419,7 @@ public function asignarRegistradorEvento(
     }
 
     // Validar que el evento no haya iniciado
-    $inicioEvento = Carbon\Carbon::parse(
+    $inicioEvento = Carbon::parse(
         $evento->fecha . ' ' . $evento->hora_inicio
     );
 

@@ -4,6 +4,7 @@ namespace App\Modules\Class\Services;
 
 use Illuminate\Support\Facades\Auth;
 use App\Models\Clase;
+use App\Models\Alumno;
 use Exception;
 
 class ClassService

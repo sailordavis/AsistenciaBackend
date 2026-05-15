@@ -197,7 +197,7 @@ public function mostrarEventosAsignados($docenteId)
     })
     ->with([
         'clase',
-        'creador'
+        'usuario'
     ])
     ->orderBy('fecha', 'asc')
     ->orderBy('hora_inicio', 'asc')

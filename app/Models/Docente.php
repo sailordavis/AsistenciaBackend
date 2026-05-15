@@ -29,6 +29,6 @@ class Docente extends Model
     */
    public function clases()
    {
-    return $this->hasMany(Clase::class);
+    return $this->hasMany(Clase::class,'docente_id');
    }
 }

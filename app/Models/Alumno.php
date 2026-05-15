@@ -41,6 +41,6 @@ class Alumno extends Model
  * Relacion con la tabla asistencia
  */
 public function asistencias(){
-    return $this->hasMany(Asistencia::class);
+    return $this->hasMany(Asistencia::class,'alumno_id');
 }
 }
