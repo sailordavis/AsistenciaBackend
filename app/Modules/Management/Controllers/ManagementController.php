@@ -254,9 +254,9 @@ public function ActualizarCuenta(Request $request, $id)
     ], 200);
 }
 
-//Funcion para la gestion de las clases registradas en la clase
+//Funciones para la visualizacion global de clases
 //Operacion GET: MostrarClases del docente seleccionado via id por url 
-    public function mostrarClasesDocente(ClassService $service, $docenteId)
+    public function mostrarClasesDocente(ManagementService $service, $docenteId)
     {
         try {
             $clases = $service->mostrarClasesDocente($docenteId);
@@ -269,6 +269,95 @@ public function ActualizarCuenta(Request $request, $id)
             ], 400);
         }
     }
+
+      //Operacion GET: Mostrar lista de alumnos registrados a clase
+
+   public function mostrarAlumnosClase($claseId, ManagementService $service)
+{
+    try {
+
+        $alumnos = $service->mostrarAlumnosClase(
+            $claseId
+        );
+
+        return response()->json($alumnos, 200);
+
+    } catch (\Exception $e) {
+
+        return response()->json([
+            'error' => $e->getMessage()
+        ], 404);
+
+    }
+}
+
+//Funciones para la visualizacion global de eventos
+//Operacion GET: MOstrar todos los eventos generales
+public function obtenerEventosGenerales( ManagementService $service) {
+
+    try {
+
+        $eventos =  $service->obtenerEventosGenerales();
+
+        return response()->json([
+            'message' => 'Eventos obtenidos correctamente',
+            'eventos' => $eventos
+        ], 200);
+
+    } catch (\Exception $e) {
+
+        return response()->json([
+            'message' => $e->getMessage()
+        ], 400);
+    }
+}
+
+   //Operacion GET: Obtener los eventos de una clase en especifico
+    public function obtenerEventosClase($claseId, ManagementService $service )
+{
+    try {
+        
+        $eventos =  $service->obtenerEventosClase(
+            $claseId
+        );
+
+        return response()->json([
+            'message' => 'Eventos obtenidos correctamente',
+            'eventos' => $eventos
+        ], 200);
+
+    } catch (\Exception $e) {
+
+        return response()->json([
+            'message' => $e->getMessage()
+        ], 400);
+
+    }
+}
+
+
+//Operacion GET: Mostrar los eventos que le asignaron al docente
+public function mostrarEventosAsignados($docenteId, ManagementService $service)
+{
+    try {
+
+        $eventos = $service->mostrarEventosAsignados(
+            $docenteId
+        );
+
+        return response()->json([
+            'message' => 'Eventos asignados obtenidos correctamente',
+            'eventos' => $eventos
+        ], 200);
+
+    } catch (\Exception $e) {
+
+        return response()->json([
+            'message' => $e->getMessage()
+        ], 400);
+
+    }
+}
 
 
 

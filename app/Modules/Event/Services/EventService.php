@@ -111,19 +111,7 @@ class EventService{
             'No tienes permiso para eliminar este evento'
         );
     }
-    // //Posiblemente se elimine este bloque de codigo
-    // // Construir fecha y hora final del evento
-    // $fechaHoraFin = Carbon::parse(
-    //     $evento->fecha . ' ' . $evento->hora_fin
-    // );
-
-    // // Validar que el evento NO esté en curso
-    // if (now()->lessThan($fechaHoraFin)) {
-
-    //     throw new Exception(
-    //         'No puedes eliminar un evento que aún no finaliza'
-    //     );
-    // }
+    
 
     // Eliminar evento
     // Las relaciones con cascade también se eliminarán
@@ -279,22 +267,7 @@ public function obtenerEventosAdministrador($usuarioId)
 
     return $eventos;
 }
-//Funcion que obtiene los eventos generales creados junto los datos de su creador 
-public function obtenerEventosGenerales()
-{
-    $eventos = Evento::where(
-        'tipo',
-        'general'
-    )
-    ->with([
-        'usuario'
-    ])
-    ->orderBy('fecha', 'asc')
-    ->orderBy('hora_inicio', 'asc')
-    ->get();
 
-    return $eventos;
-}
 
 //Funcion para eliminar un evento general con el id obtenido
 public function eliminarEventoGeneral($eventoId,$usuarioId ) {
@@ -322,17 +295,7 @@ public function eliminarEventoGeneral($eventoId,$usuarioId ) {
         );
     }
 
-    // // Validar que aún NO haya iniciado
-    // $inicioEvento = Carbon::parse(
-    //     $evento->fecha . ' ' . $evento->hora_inicio
-    // );
-
-    // if (now()->greaterThanOrEqualTo($inicioEvento)) {
-
-    //     throw new Exception(
-    //         'No puedes eliminar un evento que ya inició'
-    //     );
-    // }
+    
 
     // Eliminar evento
     $evento->delete();

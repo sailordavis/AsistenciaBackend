@@ -16,8 +16,14 @@ Route::middleware(['auth:sanctum','role:1'])->group(function () {
      Route::delete('/EliminarCuenta/{id}', [ManagementController::class, 'EliminarCuenta']);
      Route::put('/ActualizarCuenta/{id}', [ManagementController::class, 'ActualizarCuenta']);
 
-     //Seccion gestion de las clases parte del sistema 
+     //Seccion para la visualizacion global de clases
      Route::get('/mostrarClasesDocente/{docenteId}',[ManagementController::class, 'mostrarClasesDocente']);
+     Route::get('/mostrarAlumnosClase/{claseId}',[ManagementController::class, 'mostrarAlumnosClase']); 
+
+     //Seccion gestion de los eventos parte del sistema
+      Route::get('/obtenerEventosGenerales',[ManagementController::class, 'obtenerEventosGenerales']);
+      Route::get('/obtenerEventosClase/{claseId}',[ManagementController::class, 'obtenerEventosClase']); 
+      Route::get('/mostrarEventosAsignados/{docenteId}',[ManagementController::class, 'mostrarEventosAsignados']);
      
      //Endpoints a editar o eliminar 
      Route::get('/asistenciasEvento{eventoId}',[ManagementController::class, 'asistenciasEvento']);

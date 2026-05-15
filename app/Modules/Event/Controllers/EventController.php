@@ -142,7 +142,7 @@ public function actualizarEventoClase($eventoId, Request $request)
 }
 
 //Operacion GET: Mostrar los eventos que le asignaron al docente
-public function mostrarEventosAsignados(EventoService $service)
+public function mostrarEventosAsignados()
 {
     try {
 
@@ -241,25 +241,6 @@ public function obtenerEventosAdministrador() {
     }
 }
 
-//Operacion GET: MOstrar todos los eventos generales
-public function obtenerEventosGenerales() {
-
-    try {
-
-        $eventos =  $this->eventoService->obtenerEventosGenerales();
-
-        return response()->json([
-            'message' => 'Eventos obtenidos correctamente',
-            'eventos' => $eventos
-        ], 200);
-
-    } catch (\Exception $e) {
-
-        return response()->json([
-            'message' => $e->getMessage()
-        ], 400);
-    }
-}
 
 
 //Operacion DELETE: Eliminar un evento indicado con id como referencia

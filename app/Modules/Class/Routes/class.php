@@ -13,7 +13,7 @@ Route::middleware(['auth:sanctum','role:2'])->group(function () {
         Route::delete('/eliminarClase/{id}', [ClassController::class, 'eliminarClase']);
         Route::put('/actualizarClase/{id}', [ClassController::class, 'actualizarClase']);
         Route::get('/mostrarAlumnosClase/{claseId}',[ClassController::class, 'mostrarAlumnosClase']);
-
+        
         
         
 

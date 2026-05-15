@@ -7,6 +7,8 @@ use App\Models\Usuario;
 use App\Models\Docente;
 use App\Models\Alumno;
 use App\Models\Administrador;
+use App\Models\Clase;
+use App\Models\Evento;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Asistencia;
 use Exception;
@@ -81,6 +83,8 @@ public function mostrarAdministrador($correo)
     return $administrador;
 }
 
+//Funciones para la visualizacion gobal de clases
+
 //Mostrar  todas las clases del docente seleccionado
     public function mostrarClasesDocente($docenteId)
     {
@@ -89,7 +93,121 @@ public function mostrarAdministrador($correo)
         ->orderBy('created_at', 'desc')
         ->get();
     }
+
+
+      //Mostrar listas de alumnos por clase
+
+   public function mostrarAlumnosClase($claseId)
+{
+    $clase = Clase::with('alumnos.usuario')
+        ->where('id', $claseId)
+        ->first();
+
+    if (!$clase) {
+        throw new \Exception("Clase no encontrada");
+    }
+
+    return $clase->alumnos;
+}
+
+//Funciones para la visualizacion global de eventos
+//Funcion que obtiene los eventos generales creados junto los datos de su creador 
+public function obtenerEventosGenerales()
+{
+    $eventos = Evento::where(
+        'tipo',
+        'general'
+    )
+    ->with([
+        'usuario'
+    ])
+    ->orderBy('fecha', 'asc')
+    ->orderBy('hora_inicio', 'asc')
+    ->get();
+
+    return $eventos;
+}
+
+    //  Mostrar eventos que pertenecen a una clase en particular 
+    public function obtenerEventosClase($claseId)
+{
+    // Buscar clase
+    $clase = Clase::find($claseId);
+
+    if (!$clase) {
+        throw new Exception('Clase no encontrada');
+    }
+
+    
+
+    // Obtener eventos
+    $eventos = Evento::where('clase_id', $claseId)
+        ->orderBy('fecha', 'desc')
+        ->orderBy('hora_inicio', 'desc')
+        ->get();
+
+    return $eventos;
+}
+
+//Mostrar Eventos asignados al docente
+public function mostrarEventosAsignados($docenteId)
+{
+    // Validar que exista docente
+    $docente = Docente::find($docenteId);
+
+    if (!$docente) {
+        throw new Exception('Docente no encontrado');
+    }
+    //Obtener el id usuario del docente
+    $usuarioId = $docente->usuario_id;
+
+
+    // Obtener fecha y hora actual
+    $ahora = now();
+
+    // Obtener eventos asignados que aún no terminan
+    $eventos = Evento::whereHas(
+        'registradores',
+        function ($query) use ($usuarioId ) {
+
+            $query->where(
+                'usuarios.id',
+                  $usuarioId 
+            );
+        }
+    )
+    ->where(function ($query) use ($ahora) {
+
+        // Eventos futuros
+        $query->where('fecha', '>', $ahora->toDateString())
+
+        // O eventos de hoy que aún no terminan
+        ->orWhere(function ($subQuery) use ($ahora) {
+
+            $subQuery->where(
+                'fecha',
+                $ahora->toDateString()
+            )
+            ->where(
+                'hora_fin',
+                '>=',
+                $ahora->format('H:i:s')
+            );
+        });
+    })
+    ->with([
+        'clase',
+        'creador'
+    ])
+    ->orderBy('fecha', 'asc')
+    ->orderBy('hora_inicio', 'asc')
+    ->get();
+
+    return $eventos;
+}
    
+
+
 
 
     //Futuras funciones a editar o eliminar
