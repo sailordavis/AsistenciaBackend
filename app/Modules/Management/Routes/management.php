@@ -5,7 +5,7 @@ use App\Modules\Management\Controllers\ManagementController;
 Route::prefix('management' )->group(function (){
 
 Route::middleware(['auth:sanctum','role:1'])->group(function () {
-    //Seccion gestion de los usuarios parte del sistema
+    //Seccion para la gestion de los usuarios parte del sistema
      Route::post('/register', [ManagementController::class, 'register']);
      Route::get('/listarUsuarios',[ManagementController::class, 'listarUsuarios']);
      Route::get('/listarUsuariosRol/{rolId}', [ManagementController::class, 'listarUsuariosRol']);
@@ -20,13 +20,15 @@ Route::middleware(['auth:sanctum','role:1'])->group(function () {
      Route::get('/mostrarClasesDocente/{docenteId}',[ManagementController::class, 'mostrarClasesDocente']);
      Route::get('/mostrarAlumnosClase/{claseId}',[ManagementController::class, 'mostrarAlumnosClase']); 
 
-     //Seccion gestion de los eventos parte del sistema
+     //Seccion para la visualizacion global de eventos 
       Route::get('/obtenerEventosGenerales',[ManagementController::class, 'obtenerEventosGenerales']);
       Route::get('/obtenerEventosClase/{claseId}',[ManagementController::class, 'obtenerEventosClase']); 
       Route::get('/mostrarEventosAsignados/{docenteId}',[ManagementController::class, 'mostrarEventosAsignados']);
+
+    //Seccion para la visualizacion global de asistencias
+    Route::get('/obtenerAsistenciasEvento/{eventoId}',[ManagementController::class, 'obtenerAsistenciasEvento']); 
      
-     //Endpoints a editar o eliminar 
-     Route::get('/asistenciasEvento{eventoId}',[ManagementController::class, 'asistenciasEvento']);
+     
     });
 
 });

@@ -8,6 +8,7 @@ use Exception;
 
 class ClassService
 {
+    //Funciones para el rol docente
     //Mostrar  todas las clases del docente
     public function mostrarClases($docenteId)
     {
@@ -80,6 +81,34 @@ class ClassService
     }
 
     return $clase->alumnos;
+}
+
+//Funcion para el rol alumno 
+
+public function obtenerMisClases($usuarioId)
+{
+    // Buscar alumno autenticado
+    $alumno = Alumno::where(
+        'usuario_id',
+        $usuarioId
+    )->first();
+
+    if (!$alumno) {
+
+        throw new Exception(
+            'Alumno no encontrado'
+        );
+    }
+
+    // Obtener clases inscritas
+    $clases = $alumno->clases()
+        ->with([
+            'docente.usuario'
+        ])
+        ->orderBy('nombre', 'asc')
+        ->get();
+
+    return $clases;
 }
 
 

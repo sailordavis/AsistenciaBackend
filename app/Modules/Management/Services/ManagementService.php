@@ -210,40 +210,44 @@ public function mostrarEventosAsignados($docenteId)
 
 
 
-    //Futuras funciones a editar o eliminar
+//Funciones para la visualizacion global de asistencias
+public function obtenerAsistenciasEvento(
+    $eventoId
+) {
 
-public function asistenciasPorEvento($eventoId)
-{
-    $usuario = Auth::user();
+    // Buscar evento
+    $evento = Evento::find($eventoId);
 
-    if (!$usuario) {
-        throw new \Exception("Usuario no autenticado");
+    if (!$evento) {
+
+        throw new Exception(
+            'Evento no encontrado'
+        );
     }
 
-    // Solo admin
-    if ($usuario->rol_id !== 1) {
-        throw new \Exception("No tienes permisos para ver asistencias globales");
-    }
+    // Obtener asistencias
+    $asistencias = Asistencia::with([
 
-    $asistencias = Asistencia::with(['alumno.usuario'])
-        ->where('evento_id', $eventoId)
-        ->get();
+        'alumno.usuario',
+        'evento',
+        'evento.clase',
+        'evento.usuario'
 
-    if ($asistencias->isEmpty()) {
-        throw new \Exception("No hay asistencias para este evento");
-    }
+    ])
+    ->where(
+        'evento_id',
+        $evento->id
+    )
+    ->orderBy(
+        'hora_registro',
+        'desc'
+    )
+    ->get();
 
-    //  Formato limpio 
-    return $asistencias->map(function ($asistencia) {
-        return [
-            'alumno_id' => $asistencia->alumno_id,
-            'nombre' => $asistencia->alumno->usuario->nombre ?? '',
-            'apellidos' => $asistencia->alumno->usuario->apellidos ?? '',
-            'estado' => $asistencia->estado,
-            'hora_registro' => $asistencia->hora_registro,
-        ];
-    });
+    return $asistencias;
 }
+
+
   
 
 

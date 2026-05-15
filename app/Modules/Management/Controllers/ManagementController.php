@@ -360,7 +360,40 @@ public function mostrarEventosAsignados($docenteId, ManagementService $service)
 }
 
 
+//Funciones para la visualizacion global de asistencias
 
+
+// Operacion GET: Obtencion de lista de asistencias globales de eventos 
+
+public function obtenerAsistenciasEvento(
+    $eventoId,
+    ManagementService $service
+) {
+
+    try {
+
+        $asistencias = $service
+            ->obtenerAsistenciasEvento(
+                $eventoId
+            );
+
+        return response()->json([
+
+            'message' => 'Asistencias obtenidas correctamente',
+
+            'asistencias' => $asistencias
+
+        ], 200);
+
+    } catch (\Exception $e) {
+
+        return response()->json([
+
+            'message' => $e->getMessage()
+
+        ], 400);
+    }
+}
 
 
     
@@ -368,21 +401,7 @@ public function mostrarEventosAsignados($docenteId, ManagementService $service)
 
 
  
- //Funciones a editar o eliminar en un futuro
 
-    public function asistenciasEvento($eventoId, ManagementService $service)
-{
-    try {
-        $asistencias = $service->asistenciasPorEvento($eventoId);
-
-        return response()->json($asistencias);
-
-    } catch (\Exception $e) {
-        return response()->json([
-            'error' => $e->getMessage()
-        ], 403);
-    }
-}
 
 
 

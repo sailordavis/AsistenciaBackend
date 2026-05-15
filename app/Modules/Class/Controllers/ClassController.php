@@ -172,4 +172,35 @@ private function getDocenteId()
 
     return $docente->id;
 }
+
+//Funcion para el rol alumno 
+//Operacion GET: Mostrar las clases en las que el alumno asiste
+
+public function obtenerMisClases(
+    ClassService $service
+) {
+
+    try {
+
+        $clases = $service->obtenerMisClases(
+            auth()->id()
+        );
+
+        return response()->json([
+
+            'message' => 'Clases obtenidas correctamente',
+
+            'clases' => $clases
+
+        ], 200);
+
+    } catch (\Exception $e) {
+
+        return response()->json([
+
+            'message' => $e->getMessage()
+
+        ], 400);
+    }
+}
 }
