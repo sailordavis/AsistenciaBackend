@@ -15,7 +15,7 @@ Route::middleware(['auth:sanctum','role:2'])->group(function () { //Rol Docente
 
 Route::middleware(['auth:sanctum','role:1'])->group(function () { //Rol administrador
         Route::post('/crearEventoGeneral', [EventController::class, 'crearEventoGeneral']);
-        Route::get('/obtenerEventosAdministrador',[EventController::class, 'obtenerEventosAdministrador']);
+        Route::get('/obtenerEventosAdministrador',[EventController::class, 'obtenerEventosAdministrador']); //posiblemente se elimine en un futuro
         Route::put('/actualizarEventoGeneral/{eventoId}',[EventController::class, 'actualizarEventoGeneral']);
         Route::delete('/eliminarEventoGeneral/{eventoId}',[EventController::class, 'eliminarEventoGeneral']);
         Route::post('/asignarRegistradorEvento', [EventController::class, 'asignarRegistradorEvento']);

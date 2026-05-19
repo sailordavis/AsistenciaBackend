@@ -105,13 +105,15 @@ class ManagementController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Rol inválido'
+                'data' => 'Rol inválido'
             ], 400);
 
         }
 
         // Obtener usuarios por rol
-        $usuarios = Usuario::where('rol_id', $rolId)->get();
+        $usuarios = Usuario::with(['alumno', 'docente'])
+        ->where('rol_id', $rolId)
+        ->get();
 
        return response()->json([
             'success' => true,
@@ -127,132 +129,206 @@ class ManagementController extends Controller
     }
 }
 
-      // Operacion GET: obtener un usuario en especifico (independiente del rol)/correo
-    public function buscarUsuario( ManagementService $service, $correo)
-{
-    try {
-        $usuario = $service->mostrarUsuario($correo);
 
-        return response()->json($usuario, 200);
+
+     // Operacion GET: buscar usuarios por correo
+public function buscarUsuarios(
+    ManagementService $service,
+    $correo
+) {
+
+    try {
+
+        $usuarios = $service->mostrarUsuarios($correo);
+
+        return response()->json([
+            'success' => true,
+            'data' => $usuarios
+        ], 200);
 
     } catch (\Exception $e) {
-        return response()->json([
-            'error' => $e->getMessage()
-        ], 500);
-    }
 
+        return response()->json([
+            'success' => false,
+            'message' => $e->getMessage()
+        ], 500);
+
+    }
 }
 //Operacio GET: obtener un docente en especifico /numero de nomina
-public function buscarDocente(ManagementService $service, $nomina)
+public function buscarDocentes(ManagementService $service, $nomina)
 {
     try {
 
-        $docente = $service->mostrarDocente($nomina);
+        $docentes = $service->mostrarDocentes($nomina);
 
-        return response()->json($docente, 200);
+        return response()->json([
+            'success' => true,
+            'data' => $docentes
+        ], 200);
 
     } catch (\Exception $e) {
 
         return response()->json([
-            'error' => $e->getMessage()
-        ], 404);
+            'success' => false,
+            'data' => $e->getMessage()
+        ], 500);
 
     }
 }
  //Operacion GET: obtener un alumno en especifico /codigo institucional
-  public function buscarAlumno( ManagementService $service, $codigo)
+  public function buscarAlumnos( ManagementService $service, $codigo)
 {
     try {
-        $alumno = $service->mostrarAlumno($codigo);
+        $alumnos = $service->mostrarAlumnos($codigo);
 
-        return response()->json($alumno, 200);
+         return response()->json([
+            'success' => true,
+            'data' => $alumnos
+        ], 200);
 
     } catch (\Exception $e) {
-        return response()->json([
-            'error' => $e->getMessage()
+         return response()->json([
+            'success' => false,
+            'data' => $e->getMessage()
         ], 500);
     }
 }
- //Operacion GET: obtener un administrador en especifico /correo
-public function buscarAdministrador( ManagementService $service, $correo)
-{
-    try {
-        $administrador = $service->mostrarAdministrador($correo);
-
-        return response()->json($administrador, 200);
-
-    } catch (\Exception $e) {
-        return response()->json([
-            'error' => $e->getMessage()
-        ], 500);
-    }
-}
+ 
 //Operacion DELETE: eliminar una cuenta usuario especifico /id
+
 public function EliminarCuenta($id)
 {
-    $usuario = Usuario::find($id);
+    try {
 
-    if (!$usuario) {
+        $usuario = Usuario::find($id);
+
+        if (!$usuario) {
+
+            return response()->json([
+
+                'success' => false,
+                'message' => 'Usuario no encontrado'
+
+            ], 404);
+        }
+
+        $usuario->delete();
+
         return response()->json([
-            'message' => 'Usuario no encontrado'
-        ], 404);
+
+            'success' => true,
+            'message' => 'Usuario eliminado correctamente'
+
+        ], 200);
+
+    } catch (\Exception $e) {
+
+        return response()->json([
+
+            'success' => false,
+            'message' => 'Error al eliminar el usuario',
+            'error' => $e->getMessage()
+
+        ], 500);
     }
-
-    $usuario->delete();
-
-    return response()->json([
-        'message' => 'Usuario eliminado correctamente'
-    ], 200);
 }
-//Operacion PUT: editar una cuenta usuario especifico /id
+// Operacion PUT: editar una cuenta usuario especifico /id
 public function ActualizarCuenta(Request $request, $id)
 {
-    // Buscar usuario
-    $usuario = Usuario::find($id);
+    try {
 
-    if (!$usuario) {
+        // Buscar usuario
+        $usuario = Usuario::find($id);
+
+        if (!$usuario) {
+
+            return response()->json([
+
+                'success' => false,
+                'message' => 'Usuario no encontrado'
+
+            ], 404);
+        }
+
+        // Actualizar campos generales (usuarios)
+        $usuario->nombre = $request->input(
+            'nombre',
+            $usuario->nombre
+        );
+
+        $usuario->apellidos = $request->input(
+            'apellidos',
+            $usuario->apellidos
+        );
+
+        $usuario->correoinstitucional = $request->input(
+            'correoinstitucional',
+            $usuario->correoinstitucional
+        );
+
+        $usuario->save();
+
+        // Validar rol y actualizar tabla relacionada
+        if ($usuario->rol_id == 3) { // Estudiante
+
+            $alumno = Alumno::where(
+                'usuario_id',
+                $usuario->id
+            )->first();
+
+            if ($alumno) {
+
+                $alumno->codigo_institucional = $request->input(
+
+                    'codigo_institucional',
+                    $alumno->codigo_institucional
+
+                );
+
+                $alumno->save();
+            }
+
+        } elseif ($usuario->rol_id == 2) { // Docente
+
+            $docente = Docente::where(
+                'usuario_id',
+                $usuario->id
+            )->first();
+
+            if ($docente) {
+
+                $docente->numero_nomina = $request->input(
+
+                    'numero_nomina',
+                    $docente->numero_nomina
+
+                );
+
+                $docente->save();
+            }
+        }
+
         return response()->json([
-            'message' => 'Usuario no encontrado'
-        ], 404);
+
+            'success' => true,
+            'message' => 'Usuario actualizado correctamente',
+            'data' => $usuario
+
+        ], 200);
+
+    } catch (\Exception $e) {
+
+        return response()->json([
+
+            'success' => false,
+            'message' => 'Error al actualizar el usuario',
+            'error' => $e->getMessage()
+
+        ], 500);
     }
-
-    //  Actualizar campos generales (usuarios)
-    $usuario->nombre = $request->input('nombre', $usuario->nombre);
-    $usuario->apellidos = $request->input('apellidos', $usuario->apellidos);
-    $usuario->correoinstitucional = $request->input('correoinstitucional', $usuario->correoinstitucional);
-    $usuario->save();
-
-    //  Validar rol y actualizar tabla relacionada
-    if ($usuario->rol_id == 3) { // Estudiante
-
-        $alumno = Alumno::where('usuario_id', $usuario->id)->first();
-
-        if ($alumno) {
-            $alumno->codigo_institucional = $request->input(
-                'codigo_institucional',
-                $alumno->codigo_institucional
-            );
-            $alumno->save();
-        }
-
-    } elseif ($usuario->rol_id == 2) { // Docente
-
-        $docente = Docente::where('usuario_id', $usuario->id)->first();
-
-        if ($docente) {
-            $docente->numero_nomina = $request->input(
-                'numero_nomina',
-                $docente->numero_nomina
-            );
-            $docente->save();
-        }
-    }
-
-    return response()->json([
-        'message' => 'Usuario actualizado correctamente',
-        'data' => $usuario
-    ], 200);
 }
+
 
 //Funciones para la visualizacion global de clases
 //Operacion GET: MostrarClases del docente seleccionado via id por url 
@@ -261,7 +337,10 @@ public function ActualizarCuenta(Request $request, $id)
         try {
             $clases = $service->mostrarClasesDocente($docenteId);
 
-            return response()->json($clases);
+            return response()->json([
+            'success' => true,
+            'data' => $clases
+            ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
@@ -280,7 +359,10 @@ public function ActualizarCuenta(Request $request, $id)
             $claseId
         );
 
-        return response()->json($alumnos, 200);
+        return response()->json([
+            'success' => true,
+            'data' => $alumnos
+        ], 200);
 
     } catch (\Exception $e) {
 
@@ -288,6 +370,36 @@ public function ActualizarCuenta(Request $request, $id)
             'error' => $e->getMessage()
         ], 404);
 
+    }
+}
+
+
+//Operacion GET: Obtener las clases alas que pertenece el alumno 
+
+public function obtenerClasesAlumno(
+    $alumnoId,
+    ManagementService $service
+) {
+
+    try {
+
+        $clases = $service
+            ->obtenerClasesAlumno(
+                $alumnoId
+            );
+
+         return response()->json([
+            'success' => true,
+            'data' => $clases
+        ], 200);
+
+    } catch (\Exception $e) {
+
+        return response()->json([
+
+            'message' => $e->getMessage()
+
+        ], 400);
     }
 }
 
@@ -299,9 +411,9 @@ public function obtenerEventosGenerales( ManagementService $service) {
 
         $eventos =  $service->obtenerEventosGenerales();
 
-        return response()->json([
-            'message' => 'Eventos obtenidos correctamente',
-            'eventos' => $eventos
+       return response()->json([
+            'success' => true,
+            'data' => $eventos
         ], 200);
 
     } catch (\Exception $e) {
@@ -322,8 +434,8 @@ public function obtenerEventosGenerales( ManagementService $service) {
         );
 
         return response()->json([
-            'message' => 'Eventos obtenidos correctamente',
-            'eventos' => $eventos
+            'success' => true,
+            'data' => $eventos
         ], 200);
 
     } catch (\Exception $e) {
@@ -346,8 +458,8 @@ public function mostrarEventosAsignados($docenteId, ManagementService $service)
         );
 
         return response()->json([
-            'message' => 'Eventos asignados obtenidos correctamente',
-            'eventos' => $eventos
+            'success' => true,
+            'data' => $eventos
         ], 200);
 
     } catch (\Exception $e) {
@@ -378,11 +490,8 @@ public function obtenerAsistenciasEvento(
             );
 
         return response()->json([
-
-            'message' => 'Asistencias obtenidas correctamente',
-
-            'asistencias' => $asistencias
-
+            'success' => true,
+            'data' => $asistencias
         ], 200);
 
     } catch (\Exception $e) {
@@ -395,6 +504,69 @@ public function obtenerAsistenciasEvento(
     }
 }
 
+
+// Operacion GET: Obtener asistencias propias del alumno en una clase en especifico
+
+public function obtenerAsistenciasClaseAlumno(
+    $alumnoId,
+    $claseId,
+    ManagementService $service
+) {
+
+    try {
+
+        $asistencias = $service
+            ->obtenerAsistenciasClaseAlumno(
+
+                $alumnoId,
+
+                $claseId
+            );
+
+           return response()->json([
+            'success' => true,
+            'data' => $asistencias
+        ], 200);
+
+    } catch (\Exception $e) {
+
+        return response()->json([
+
+            'message' => $e->getMessage()
+
+        ], 400);
+    }
+}
+
+
+// Operacion GET: Obtener asistencias de eventos generales del alumno 
+
+public function obtenerAsistenciasEventosGeneralesAlumno(
+    $alumnoId,
+    ManagementService $service
+) {
+
+    try {
+
+        $asistencias = $service
+            ->obtenerAsistenciasEventosGeneralesAlumno(
+                $alumnoId
+            );
+
+        return response()->json([
+            'success' => true,
+            'data' => $asistencias
+        ], 200);
+
+    } catch (\Exception $e) {
+
+        return response()->json([
+
+            'message' => $e->getMessage()
+
+        ], 400);
+    }
+}
 
     
    

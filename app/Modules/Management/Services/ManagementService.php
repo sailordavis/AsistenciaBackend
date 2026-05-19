@@ -26,62 +26,73 @@ class ManagementService{
     }
 
 
-//  Mostrar usuario con correo proporcionado via url 
-    public function mostrarUsuario($correo)
-    {
-        $usuario = Usuario::where('correoinstitucional', $correo)
-        ->first();
+// Mostrar usuarios que coincidan con el correo proporcionado
+public function mostrarUsuarios($correo)
+{
+    $usuarios = Usuario::where(
+        'correoinstitucional',
+        'LIKE',
+        "%$correo%"
+    )->get();
 
-    if (!$usuario) {
-            throw new \Exception("Usuario no encontrado");
-        }
+    if ($usuarios->isEmpty()) {
 
-    return $usuario;
+        throw new \Exception("No se encontraron coincidencias");
+
     }
 
-    //Mostrar docente con nomina proporcionado via url 
-    public function mostrarDocente($nomina)
-{
-    $docente = Docente::with('usuario') // para traer nombre, correo, etc.
-        ->where('numero_nomina',$nomina)
-        ->first();
+    return $usuarios;
+}
 
-    if (!$docente) {
-            throw new \Exception("Docente no encontrado");
-        }
-    
-        return $docente;
+   // Mostrar docentes que coincidan con la nómina proporcionada
+public function mostrarDocentes($nomina)
+{
+    $docentes = Usuario::with('docente') 
+     ->whereHas('docente', function ($query) use ($nomina){
+       $query->where(
+            'numero_nomina',
+            'LIKE',
+            "%$nomina%"
+        );
+     })
+    ->get();
+
+    if ($docentes->isEmpty()) {
+
+        throw new \Exception("No se encontraron coincidencias");
+
+    }
+
+    return $docentes;
 }
 
 //Mostrar alumno con codigo proporcionado via url
-public function mostrarAlumno($codigo)
+public function mostrarAlumnos($codigo)
 {
-    $alumno = Alumno::with('usuario') // trae nombre, correo, etc.
-        ->where('codigo_institucional', $codigo)
-        ->first();
+    $alumnos = Usuario::with('alumno')
 
-    if (!$alumno) {
-            throw new \Exception("Alumno no encontrado");
-        }
+    ->whereHas('alumno', function ($query) use ($codigo) {
 
-    return $alumno;
-}
+        $query->where(
+            'codigo_institucional',
+            'LIKE',
+            "%$codigo%"
+        );
 
-//Mostrar administrador con correo proporcionado via url
-public function mostrarAdministrador($correo)
-{
-     $administrador = Administrador::with('usuario')
-    ->whereHas('usuario', function ($query) use ($correo) {
-        $query->where('correoinstitucional', $correo);
     })
-    ->first();
 
-    if (!$administrador) {
-            throw new \Exception("Administrador no encontrado");
-        }
+    ->get();
 
-    return $administrador;
+    if ($alumnos->isEmpty()) {
+
+        throw new \Exception("No se encontraron coincidencias");
+
+    }
+
+    return $alumnos;
 }
+
+
 
 //Funciones para la visualizacion gobal de clases
 
@@ -108,6 +119,29 @@ public function mostrarAdministrador($correo)
     }
 
     return $clase->alumnos;
+}
+
+//Mostrar las clases a las que pertenece el alumno 
+public function obtenerClasesAlumno($alumnoId)
+{
+    // Buscar alumno
+    $alumno = Alumno::find($alumnoId);
+
+    if (!$alumno) {
+        throw new Exception('Alumno no encontrado');
+    }
+
+    // Obtener solo clases con docente y usuario del docente
+    $clases = $alumno->clases()
+        ->with([
+            'docente.usuario'
+        ])
+        ->orderBy('nombre', 'asc')
+        ->get();
+
+    return [
+        'clases' => $clases
+    ];
 }
 
 //Funciones para la visualizacion global de eventos
@@ -196,7 +230,6 @@ public function mostrarEventosAsignados($docenteId)
         });
     })
     ->with([
-        'clase',
         'usuario'
     ])
     ->orderBy('fecha', 'asc')
@@ -211,6 +244,8 @@ public function mostrarEventosAsignados($docenteId)
 
 
 //Funciones para la visualizacion global de asistencias
+
+//Funcion para obtener las asistencias globales de eventos 
 public function obtenerAsistenciasEvento(
     $eventoId
 ) {
@@ -245,6 +280,134 @@ public function obtenerAsistenciasEvento(
     ->get();
 
     return $asistencias;
+}
+
+
+public function obtenerAsistenciasClaseAlumno(
+    $alumnoId,
+    $claseId
+) {
+
+    // Buscar alumno
+    $alumno = Alumno::find($alumnoId);
+
+    if (!$alumno) {
+
+        throw new Exception(
+            'Alumno no encontrado'
+        );
+    }
+
+    // Buscar clase
+    $clase = Clase::find($claseId);
+
+    if (!$clase) {
+
+        throw new Exception(
+            'Clase no encontrada'
+        );
+    }
+
+    // Validar que el alumno pertenezca a la clase
+    $perteneceClase = $alumno->clases()
+        ->where(
+            'clases.id',
+            $claseId
+        )
+        ->exists();
+
+    if (!$perteneceClase) {
+
+        throw new Exception(
+            'El alumno no pertenece a esta clase'
+        );
+    }
+
+    // Obtener asistencias
+    $asistencias = Asistencia::with([
+
+        'evento',
+        'evento.clase',
+        'evento.usuario',
+        'alumno.usuario'
+
+    ])
+    ->where(
+        'alumno_id',
+        $alumno->id
+    )
+    ->whereHas('evento', function ($query) use ($claseId) {
+
+        $query->where(
+            'clase_id',
+            $claseId
+        );
+    })
+    ->orderBy(
+        'hora_registro',
+        'desc'
+    )
+    ->get();
+
+    return [
+
+        'alumno' => $alumno,
+
+        'clase' => $clase,
+
+        'asistencias' => $asistencias
+
+    ];
+}
+
+//Obtener asistencias de alumnos de eventos generales 
+public function obtenerAsistenciasEventosGeneralesAlumno(
+    $alumnoId
+) {
+
+    // Buscar alumno
+    $alumno = Alumno::with([
+        'usuario'
+    ])->find($alumnoId);
+
+    if (!$alumno) {
+
+        throw new Exception(
+            'Alumno no encontrado'
+        );
+    }
+
+    // Obtener asistencias de eventos generales
+    $asistencias = Asistencia::with([
+
+        'evento',
+        'evento.usuario',
+        'alumno.usuario'
+
+    ])
+    ->where(
+        'alumno_id',
+        $alumno->id
+    )
+    ->whereHas('evento', function ($query) {
+
+        $query->whereNull(
+            'clase_id'
+        );
+    })
+    ->orderBy(
+        'hora_registro',
+        'desc'
+    )
+    ->get();
+
+    return [
+
+        'alumno' => $alumno,
+
+        'asistencias' => $asistencias
+
+    ];
 }
 
 
