@@ -29,11 +29,8 @@ public function obtenerAsistenciasClaseAlumno(
         );
 
         return response()->json([
-
-            'message' => 'Asistencias obtenidas correctamente',
-
-            'asistencias' => $asistencias
-
+            'success' => true,
+            'data' => $asistencias
         ], 200);
 
     } catch (\Exception $e) {
@@ -61,11 +58,8 @@ public function obtenerAsistenciasEventosGenerales(
             );
 
         return response()->json([
-
-            'message' => 'Asistencias obtenidas correctamente',
-
-            'asistencias' => $asistencias
-
+            'success' => true,
+            'data' => $asistencias
         ], 200);
 
     } catch (\Exception $e) {
@@ -101,12 +95,9 @@ public function obtenerAsistenciasEventoClaseDocente(
                 $eventoId
             );
 
-        return response()->json([
-
-            'message' => 'Asistencias obtenidas correctamente',
-
-            'asistencias' => $asistencias
-
+          return response()->json([
+            'success' => true,
+            'data' => $asistencias
         ], 200);
 
     } catch (\Exception $e) {
@@ -137,12 +128,9 @@ public function obtenerAsistenciasEventosGeneralesDocente(
                 $eventoId
             );
 
-        return response()->json([
-
-            'message' => 'Asistencias obtenidas correctamente',
-
-            'asistencias' => $asistencias
-
+          return response()->json([
+            'success' => true,
+            'data' => $asistencias
         ], 200);
 
     } catch (\Exception $e) {

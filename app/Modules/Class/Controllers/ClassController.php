@@ -47,7 +47,10 @@ class ClassController extends Controller
             $docenteId = $this->getDocenteId();
             $clases = $service->mostrarClases($docenteId);
 
-            return response()->json($clases);
+            return response()->json([
+            'success' => true,
+            'data' => $clases
+        ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
@@ -57,13 +60,16 @@ class ClassController extends Controller
     }
 
     //Operacion GET: Mostrar una clase del docente con nombre via url 
-    public function buscarClase($nombre, ClassService $service)
+    public function buscarClases($nombre, ClassService $service)
     {
         try {
             $docenteId = $this->getDocenteId();
-            $clase = $service->mostrarUnaClase($nombre,$docenteId);
+            $clases = $service->buscarClases($nombre,$docenteId);
 
-            return response()->json($clase);
+            return response()->json([
+            'success' => true,
+            'data' => $clases
+        ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
@@ -140,7 +146,10 @@ class ClassController extends Controller
             $docenteId
         );
 
-        return response()->json($alumnos, 200);
+        return response()->json([
+            'success' => true,
+            'data' => $alumnos
+        ], 200);
 
     } catch (\Exception $e) {
 
@@ -187,11 +196,8 @@ public function obtenerMisClases(
         );
 
         return response()->json([
-
-            'message' => 'Clases obtenidas correctamente',
-
-            'clases' => $clases
-
+            'success' => true,
+            'data' => $clases
         ], 200);
 
     } catch (\Exception $e) {

@@ -5,7 +5,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Modules\Event\Services\EventService;
 use Exception;
-
 class EventController extends Controller
 
 
@@ -27,8 +26,7 @@ class EventController extends Controller
             'fecha' => 'required|date',
             'hora_inicio' => 'required',
             'hora_fin' => 'required',
-            'clase_id' => 'required|exists:clases,id',
-
+            'clase_id' => 'required|numeric',
             // Opcionales
             'latitud' => 'nullable|numeric',
             'longitud' => 'nullable|numeric',
@@ -56,19 +54,68 @@ class EventController extends Controller
      }
     }
     
-    //Operacion GET: Obtener los eventos de una clase en especifico
-    public function obtenerEventosClase($claseId)
+    //Operacion GET: Obtener los eventos de una clase concluida en especifico
+    public function obtenerEventosClaseConcluidos($claseId)
 {
     try {
         $docenteId = $this->getDocenteId();
-        $eventos = $this->eventoService->obtenerEventosClase(
+        $eventos = $this->eventoService->obtenerEventosClaseConcluidos(
             $claseId,
             $docenteId
         );
 
         return response()->json([
-            'message' => 'Eventos obtenidos correctamente',
-            'eventos' => $eventos
+            'success' => true,
+            'data' => $eventos
+        ], 200);
+
+    } catch (\Exception $e) {
+
+        return response()->json([
+            'message' => $e->getMessage()
+        ], 400);
+
+    }
+}
+
+    //Operacion GET: Obtener los eventos activos de una clase en especifico
+    public function obtenerEventosClaseActivos($claseId)
+{
+    try {
+        $docenteId = $this->getDocenteId();
+        $eventos = $this->eventoService->obtenerEventosClaseActivos(
+            $claseId,
+            $docenteId
+        );
+
+        return response()->json([
+            'success' => true,
+            'data' => $eventos
+        ], 200);
+
+    } catch (\Exception $e) {
+
+        return response()->json([
+            'message' => $e->getMessage()
+        ], 400);
+
+    }
+}
+
+//Operacion GET: Buscar los eventos que coincidan con el titulo proporcionado
+public function buscarEventosClase($claseId, $titulo, bool $concluido){
+   try {
+        $docenteId = $this->getDocenteId();
+        $eventos = $this->eventoService->buscarEventosClase(
+            $claseId,
+            $docenteId,
+            $titulo,
+            $concluido
+        );
+
+        return response()->json([
+            'success' => true,
+            'data' => $eventos
         ], 200);
 
     } catch (\Exception $e) {
@@ -150,9 +197,9 @@ public function mostrarEventosAsignados()
             auth()->id()
         );
 
-        return response()->json([
-            'message' => 'Eventos asignados obtenidos correctamente',
-            'eventos' => $eventos
+         return response()->json([
+            'success' => true,
+            'data' => $eventos
         ], 200);
 
     } catch (\Exception $e) {
@@ -229,8 +276,8 @@ public function obtenerEventosAdministrador() {
         );
 
         return response()->json([
-            'message' => 'Eventos obtenidos correctamente',
-            'eventos' => $eventos
+            'success' => true,
+            'data' => $eventos
         ], 200);
 
     } catch (\Exception $e) {

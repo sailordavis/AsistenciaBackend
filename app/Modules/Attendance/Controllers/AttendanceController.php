@@ -55,25 +55,21 @@ public function buscarAlumnos(
     AttendanceService $service
 ) {
 
-    try {
-
-        $request->validate([
+    $request->validate([
             'evento_id' =>'required|integer|exists:eventos,id',
             'busqueda' => 'required|string|max:255'
-            
-        ]);
+            ]);
+
+    try {
 
         $alumnos = $service->buscarAlumnos(
             $request->evento_id,
             $request->busqueda
         );
 
-        return response()->json([
-
-            'message' => 'Alumnos encontrados correctamente',
-
-            'alumnos' => $alumnos
-
+       return response()->json([
+            'success' => true,
+            'data' => $alumnos
         ], 200);
 
     } catch (\Exception $e) {
@@ -94,9 +90,8 @@ public function registrarAsistenciaManual(
     AttendanceService $service
 ) {
 
-    try {
 
-        $request->validate([
+    $request->validate([
 
             'evento_id' => 'required|exists:eventos,id',
 
@@ -107,6 +102,10 @@ public function registrarAsistenciaManual(
 
             'longitud' => 'nullable|numeric',
         ]);
+
+    try {
+
+        
 
         $asistencia = $service->registrarAsistenciaManual(
 

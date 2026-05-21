@@ -19,19 +19,19 @@ class ClassService
         ->get();
     }
 
-    //  Mostrar una clase
-    public function mostrarUnaClase($nombre,$docenteId)
-    {
-         $clase = Clase::where('nombre', $nombre)
-        ->where('docente_id', $docenteId)
-        ->first();
+     // Buscar clases del docente por nombre
+      public function buscarClases($nombre, $docenteId)
+     {
+    $clases = Clase::where('docente_id', $docenteId)
+        ->where('nombre', 'LIKE', "%{$nombre}%")
+        ->get();
 
-        if (!$clase) {
-            throw new \Exception("Clase no encontrada");
-        }
-
-        return $clase;
+    if ($clases->isEmpty()) {
+        throw new \Exception("No se encontraron coincidencias");
     }
+
+    return $clases;
+     }
 
     //  Eliminar una clase
     public function eliminarClase($id,$docenteId)

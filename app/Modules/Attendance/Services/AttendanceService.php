@@ -163,7 +163,7 @@ if (
 //Funciones para el registro de asistencias por parte del docente
 
 //Busqueda del alumno en base de la informacion recibida
-public function buscarAlumnosEvento(
+public function buscarAlumnos(
     $eventoId,
     $busqueda
 ) {

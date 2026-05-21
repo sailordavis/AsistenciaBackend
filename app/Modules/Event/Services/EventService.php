@@ -63,10 +63,111 @@ class EventService{
 
 
 
-     
-     //  Mostrar eventos que pertenecen a una clase en particular 
-    public function obtenerEventosClase($claseId, $docenteId)
-{
+//Eventos Concluidos
+public function obtenerEventosClaseConcluidos(
+    $claseId,
+    $docenteId
+) {
+
+    // Buscar clase
+    $clase = Clase::find($claseId);
+
+    if (!$clase) {
+        throw new Exception(
+            'Clase no encontrada'
+        );
+    }
+
+    // Validar pertenencia
+    if ($clase->docente_id != $docenteId) {
+
+        throw new Exception(
+            'No tienes permiso para ver los eventos de esta clase'
+        );
+    }
+
+    $ahora = Carbon::now();
+
+    // Obtener eventos concluidos
+    $eventos = Evento::where(
+            'clase_id',
+            $claseId
+        )
+
+        ->whereRaw(
+            "(fecha + hora_fin) < ?",
+            [$ahora]
+        )
+
+        ->orderBy('fecha', 'desc')
+
+        ->orderBy(
+            'hora_inicio',
+            'desc'
+        )
+
+        ->get();
+
+    return $eventos;
+}
+//Eventos Clase Activos
+public function obtenerEventosClaseActivos(
+    $claseId,
+    $docenteId
+) {
+
+    // Buscar clase
+    $clase = Clase::find($claseId);
+
+    if (!$clase) {
+        throw new Exception(
+            'Clase no encontrada'
+        );
+    }
+
+    // Validar pertenencia
+    if ($clase->docente_id != $docenteId) {
+
+        throw new Exception(
+            'No tienes permiso para ver los eventos de esta clase'
+        );
+    }
+
+    $ahora = Carbon::now();
+
+    // Obtener eventos activos
+    // futuros o en curso
+    $eventos = Evento::where(
+            'clase_id',
+            $claseId
+        )
+
+        ->whereRaw(
+            "(fecha + hora_fin) >= ?",
+            [$ahora]
+        )
+
+        ->orderBy('fecha', 'asc')
+
+        ->orderBy(
+            'hora_inicio',
+            'asc'
+        )
+
+        ->get();
+
+    return $eventos;
+}
+
+
+// Funcion que busca coincidencias en eventos de una clase
+public function buscarEventosClase(
+    $claseId,
+    $docenteId,
+    $titulo,
+    bool $concluido
+) {
+
     // Buscar clase
     $clase = Clase::find($claseId);
 
@@ -82,8 +183,30 @@ class EventService{
         );
     }
 
-    // Obtener eventos
-    $eventos = Evento::where('clase_id', $claseId)
+    $ahora = Carbon::now();
+
+    // Query base
+    $query = Evento::where('clase_id', $claseId)
+        ->where('titulo', 'LIKE', "%{$titulo}%");
+
+    // Eventos concluidos
+    if ($concluido) {
+
+        $query->whereRaw(
+            "TIMESTAMP(fecha, hora_fin) < ?",
+            [$ahora]
+        );
+
+    } else {
+
+        // Eventos futuros o en curso
+        $query->whereRaw(
+            "TIMESTAMP(fecha, hora_fin) >= ?",
+            [$ahora]
+        );
+    }
+
+    $eventos = $query
         ->orderBy('fecha', 'desc')
         ->orderBy('hora_inicio', 'desc')
         ->get();
@@ -120,50 +243,6 @@ class EventService{
     return true;
 }
 
- //Actualizar o modificar un evento de una clase en especifico
- public function actualizarEventoClase($eventoId, array $data, $docenteId)
-{
-    $evento = Evento::find($eventoId);
-
-    if (!$evento) {
-        throw new Exception('Evento no encontrado');
-    }
-
-    //Se obtiene el docente
-    $docente = Docente::find($docenteId);
-
-    // Validar que el evento pertenezca al docente
-    if ($evento->creador_id != $docente->usuario_id) {
-
-        throw new Exception(
-            'No tienes permiso para eliminar este evento'
-        );
-    }
-
-    // validar que NO haya iniciado el evento
-    $inicioEvento = Carbon::parse(
-        $evento->fecha . ' ' . $evento->hora_inicio
-    );
-
-    if (now()->greaterThanOrEqualTo($inicioEvento)) {
-        throw new Exception('No puedes modificar un evento que ya inició');
-    }
-
-    // actualizar
-    $evento->update([
-        'titulo' => $data['titulo'],
-        'fecha' => $data['fecha'],
-        'hora_inicio' => $data['hora_inicio'],
-        'hora_fin' => $data['hora_fin'],
-
-        'latitud' => $data['latitud'] ?? $evento->latitud,
-        'longitud' => $data['longitud'] ?? $evento->longitud,
-        'radio_permitido' => $data['radio_permitido'] ?? $evento->radio_permitido,
-        'direccion_texto' => $data['direccion_texto'] ?? $evento->direccion_texto,
-    ]);
-
-    return $evento;
-}
 
 
 //Mostrar Eventos asignados al docente
@@ -302,6 +381,8 @@ public function eliminarEventoGeneral($eventoId,$usuarioId ) {
 
     return true;
 }
+
+
 //Funcion para actualizar un evento general
 public function actualizarEventoGeneral(
     $eventoId,

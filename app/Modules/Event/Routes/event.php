@@ -7,10 +7,12 @@ Route::prefix('event')->group(function (){
 
 Route::middleware(['auth:sanctum','role:2'])->group(function () { //Rol Docente
         Route::post('/crearEventoClase', [EventController::class, 'crearEventoClase']);
-        Route::get('/obtenerEventosClase/{claseId}',[EventController::class, 'obtenerEventosClase']);
+        Route::get('/obtenerEventosClaseActivos/{claseId}',[EventController::class, 'obtenerEventosClaseActivos']);
+        Route::get('/obtenerEventosClaseConcluidos/{claseId}',[EventController::class, 'obtenerEventosClaseConcluidos']);
         Route::delete('/eliminarEventoClase/{eventoId}',[EventController::class, 'eliminarEventoClase']);
         Route::put('/actualizarEventoClase/{eventoId}',[EventController::class, 'actualizarEventoClase']); 
         Route::get('/mostrarEventosAsignados',[EventController::class, 'mostrarEventosAsignados']); 
+        Route::get('/buscarEventosClase/{claseId}/{titulo}/{concluido}',[EventController::class, 'buscarEventosClase']);
 });
 
 Route::middleware(['auth:sanctum','role:1'])->group(function () { //Rol administrador
