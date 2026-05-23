@@ -24,8 +24,8 @@ class EventController extends Controller
       $request->validate([
             'titulo' => 'required|string|max:255',
             'fecha' => 'required|date',
-            'hora_inicio' => 'required',
-            'hora_fin' => 'required',
+            'hora_inicio' => 'required|date_format:H:i',
+            'hora_fin' => 'required|date_format:H:i',
             'clase_id' => 'required|numeric',
             // Opcionales
             'latitud' => 'nullable|numeric',
@@ -157,8 +157,8 @@ public function actualizarEventoClase($eventoId, Request $request)
     $request->validate([
             'titulo' => 'required|string|max:255',
             'fecha' => 'required|date',
-            'hora_inicio' => 'required',
-            'hora_fin' => 'required',
+            'hora_inicio' => 'required|date_format:H:i',
+             'hora_fin' => 'required|date_format:H:i',
 
             // opcionales (ubicación)
             'latitud' => 'nullable|numeric',
@@ -238,8 +238,8 @@ public function crearEventoGeneral(Request $request,) {
     $request->validate([
             'titulo' => 'required|string|max:255',
             'fecha' => 'required|date',
-            'hora_inicio' => 'required',
-            'hora_fin' => 'required',
+            'hora_inicio' => 'required|date_format:H:i',
+             'hora_fin' => 'required|date_format:H:i',
             // Ubicación opcional
             'latitud' => 'nullable|numeric',
             'longitud' => 'nullable|numeric',
@@ -320,8 +320,8 @@ public function actualizarEventoGeneral($eventoId, Request $request,)
     $request->validate([
             'titulo' => 'required|string|max:255',
             'fecha' => 'required|date',
-            'hora_inicio' => 'required',
-            'hora_fin' => 'required',
+            'hora_inicio' => 'required|date_format:H:i',
+            'hora_fin' => 'required|date_format:H:i',
             // GPS opcional
             'latitud' => 'nullable|numeric',
             'longitud' => 'nullable|numeric',

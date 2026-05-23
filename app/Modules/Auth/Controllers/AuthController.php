@@ -86,32 +86,55 @@ class AuthController extends Controller
 }
 
 
-
 public function login(Request $request)
 {
     $request->validate([
+
         'correoinstitucional' => 'required|email',
+
         'password' => 'required'
+
     ]);
 
-    $usuario = Usuario::where('correoinstitucional', $request->correoinstitucional)->first();
+    $usuario = Usuario::where(
 
-    if (!$usuario || !Hash::check($request->password, $usuario->password)) {
+        'correoinstitucional',
+
+        $request->correoinstitucional
+
+    )->first();
+
+    if (
+
+        !$usuario ||
+
+        !Hash::check(
+            $request->password,
+            $usuario->password
+        )
+
+    ) {
+
         return response()->json([
+
             'message' => 'Credenciales incorrectas'
+
         ], 401);
     }
 
-    // eliminar tokens anteriores
-    $usuario->tokens()->delete();
-
-    // crear nuevo token
-    $token = $usuario->createToken('auth_token')->plainTextToken;
+    // CREAR NUEVO TOKEN
+    $token = $usuario
+        ->createToken('auth_token')
+        ->plainTextToken;
 
     return response()->json([
+
         'message' => 'Login exitoso',
+
         'token' => $token,
+
         'usuario' => $usuario
+
     ]);
 }
 

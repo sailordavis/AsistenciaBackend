@@ -73,6 +73,7 @@ public function obtenerEventosClaseConcluidos(
     $clase = Clase::find($claseId);
 
     if (!$clase) {
+
         throw new Exception(
             'Clase no encontrada'
         );
@@ -86,20 +87,25 @@ public function obtenerEventosClaseConcluidos(
         );
     }
 
-    $ahora = Carbon::now();
+    // Fecha actual
+    $hoy = Carbon::today();
 
-    // Obtener eventos concluidos
+    // Eventos anteriores al día de hoy
     $eventos = Evento::where(
             'clase_id',
             $claseId
         )
 
-        ->whereRaw(
-            "(fecha + hora_fin) < ?",
-            [$ahora]
+        ->whereDate(
+            'fecha',
+            '<',
+            $hoy
         )
 
-        ->orderBy('fecha', 'desc')
+        ->orderBy(
+            'fecha',
+            'desc'
+        )
 
         ->orderBy(
             'hora_inicio',
@@ -110,6 +116,7 @@ public function obtenerEventosClaseConcluidos(
 
     return $eventos;
 }
+
 //Eventos Clase Activos
 public function obtenerEventosClaseActivos(
     $claseId,
@@ -120,6 +127,7 @@ public function obtenerEventosClaseActivos(
     $clase = Clase::find($claseId);
 
     if (!$clase) {
+
         throw new Exception(
             'Clase no encontrada'
         );
@@ -133,21 +141,25 @@ public function obtenerEventosClaseActivos(
         );
     }
 
-    $ahora = Carbon::now();
+    // Fecha actual
+    $hoy = Carbon::today();
 
-    // Obtener eventos activos
-    // futuros o en curso
+    // Eventos de hoy o futuros
     $eventos = Evento::where(
             'clase_id',
             $claseId
         )
 
-        ->whereRaw(
-            "(fecha + hora_fin) >= ?",
-            [$ahora]
+        ->whereDate(
+            'fecha',
+            '>=',
+            $hoy
         )
 
-        ->orderBy('fecha', 'asc')
+        ->orderBy(
+            'fecha',
+            'asc'
+        )
 
         ->orderBy(
             'hora_inicio',
