@@ -10,8 +10,8 @@ Route::middleware(['auth:sanctum','role:1'])->group(function () {
      Route::get('/listarUsuarios',[ManagementController::class, 'listarUsuarios']);
      Route::get('/listarUsuariosRol/{rolId}', [ManagementController::class, 'listarUsuariosRol']);
      Route::get('/buscarUsuarios/{correo}',[ManagementController::class, 'buscarUsuarios']);
-     Route::get('/buscarDocentes/{nomina}',[ManagementController::class, 'buscarDocentes']); 
-     Route::get('/buscarAlumnos/{codigo}',[ManagementController::class, 'buscarAlumnos']);   
+     Route::get('/buscarDocentes/{correo}',[ManagementController::class, 'buscarDocentes']); 
+     Route::get('/buscarAlumnos/{correo}',[ManagementController::class, 'buscarAlumnos']);   
      Route::delete('/EliminarCuenta/{id}', [ManagementController::class, 'EliminarCuenta']);
      Route::put('/ActualizarCuenta/{id}', [ManagementController::class, 'ActualizarCuenta']);
 

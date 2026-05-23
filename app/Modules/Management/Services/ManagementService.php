@@ -45,14 +45,14 @@ public function mostrarUsuarios($correo)
 }
 
    // Mostrar docentes que coincidan con la nómina proporcionada
-public function mostrarDocentes($nomina)
+public function mostrarDocentes($correo)
 {
     $docentes = Usuario::with('docente') 
-     ->whereHas('docente', function ($query) use ($nomina){
+     ->whereHas('docente', function ($query) use ($correo){
        $query->where(
-            'numero_nomina',
+            'correoinstitucional',
             'LIKE',
-            "%$nomina%"
+            "%$correo%"
         );
      })
     ->get();
@@ -67,14 +67,14 @@ public function mostrarDocentes($nomina)
 }
 
 //Mostrar alumno con codigo proporcionado via url
-public function mostrarAlumnos($codigo)
+public function mostrarAlumnos($correo)
 {
     $alumnos = Usuario::with('alumno')
 
-    ->whereHas('alumno', function ($query) use ($codigo) {
+    ->whereHas('alumno', function ($query) use ($correo) {
 
         $query->where(
-            'codigo_institucional',
+            'correoinstitucionall',
             'LIKE',
             "%$codigo%"
         );

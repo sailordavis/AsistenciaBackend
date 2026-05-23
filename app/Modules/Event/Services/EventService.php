@@ -519,7 +519,7 @@ public function asignarRegistradorEvento(
     if (now()->greaterThanOrEqualTo($inicioEvento)) {
 
         throw new Exception(
-            'No puedes asignar docentes a un evento que ya inició'
+            'No puedes asignarle un evento  que ya inició'
         );
     }
 

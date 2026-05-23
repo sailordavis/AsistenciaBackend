@@ -156,11 +156,11 @@ public function buscarUsuarios(
     }
 }
 //Operacio GET: obtener un docente en especifico /numero de nomina
-public function buscarDocentes(ManagementService $service, $nomina)
+public function buscarDocentes(ManagementService $service, $correo)
 {
     try {
 
-        $docentes = $service->mostrarDocentes($nomina);
+        $docentes = $service->mostrarDocentes($correo);
 
         return response()->json([
             'success' => true,
@@ -177,7 +177,7 @@ public function buscarDocentes(ManagementService $service, $nomina)
     }
 }
  //Operacion GET: obtener un alumno en especifico /codigo institucional
-  public function buscarAlumnos( ManagementService $service, $codigo)
+  public function buscarAlumnos( ManagementService $service, $correo)
 {
     try {
         $alumnos = $service->mostrarAlumnos($codigo);
