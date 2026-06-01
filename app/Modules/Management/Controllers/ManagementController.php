@@ -180,7 +180,7 @@ public function buscarDocentes(ManagementService $service, $correo)
   public function buscarAlumnos( ManagementService $service, $correo)
 {
     try {
-        $alumnos = $service->mostrarAlumnos($codigo);
+        $alumnos = $service->mostrarAlumnos($correo);
 
          return response()->json([
             'success' => true,

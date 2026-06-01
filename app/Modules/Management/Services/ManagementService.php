@@ -20,9 +20,10 @@ class ManagementService{
  // Funcion para listar todos los usuarios 
     public function listarUsuarios()
     {
-        return Usuario::with('rol')
-        ->orderBy('created_at', 'desc')
-        ->get();
+     return Usuario::with('rol')
+    ->where('rol_id', '!=', 1)
+    ->orderBy('created_at', 'desc')
+    ->get();
     }
 
 
@@ -33,7 +34,9 @@ public function mostrarUsuarios($correo)
         'correoinstitucional',
         'LIKE',
         "%$correo%"
-    )->get();
+    )
+    ->where('rol_id', '!=', 1)
+    ->get();
 
     if ($usuarios->isEmpty()) {
 
@@ -74,9 +77,9 @@ public function mostrarAlumnos($correo)
     ->whereHas('alumno', function ($query) use ($correo) {
 
         $query->where(
-            'correoinstitucionall',
+            'correoinstitucional',
             'LIKE',
-            "%$codigo%"
+            "%$correo%"
         );
 
     })
