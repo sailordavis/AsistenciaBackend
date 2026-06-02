@@ -11,6 +11,7 @@ use App\Models\Clase;
 use App\Models\Evento;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Asistencia;
+use Carbon\Carbon;
 use Exception;
 
 class ManagementService{
@@ -186,6 +187,8 @@ public function obtenerEventosGenerales()
     return $eventos;
 }
 
+
+
 //Mostrar Eventos asignados al docente
 public function mostrarEventosAsignados($docenteId)
 {
@@ -199,45 +202,46 @@ public function mostrarEventosAsignados($docenteId)
     $usuarioId = $docente->usuario_id;
 
 
-    // Obtener fecha y hora actual
-    $ahora = now();
+// Obtener fecha y hora actual
+$ahora = now();
 
-    // Obtener eventos asignados que aún no terminan
-    $eventos = Evento::whereHas(
-        'registradores',
-        function ($query) use ($usuarioId ) {
+// Obtener eventos asignados que aún no terminan
+$eventos = Evento::whereHas(
+    'registradores',
+    function ($query) use ($usuarioId) {
 
-            $query->where(
-                'usuarios.id',
-                  $usuarioId 
-            );
-        }
-    )
-    ->where(function ($query) use ($ahora) {
+        $query->where(
+            'usuarios.id',
+            $usuarioId
+        );
+    }
+)
+->get()
+->filter(function ($evento) use ($ahora) {
 
-        // Eventos futuros
-        $query->where('fecha', '>', $ahora->toDateString())
+    // Construir fecha y hora exacta de inicio
+    $inicioEvento = Carbon::createFromFormat(
+        'Y-m-d H:i:s',
+        $evento->fecha . ' ' . $evento->hora_inicio
+    );
 
-        // O eventos de hoy que aún no terminan
-        ->orWhere(function ($subQuery) use ($ahora) {
+    // Construir fecha y hora exacta de fin
+    $finEvento = Carbon::createFromFormat(
+        'Y-m-d H:i:s',
+        $evento->fecha . ' ' . $evento->hora_fin
+    );
 
-            $subQuery->where(
-                'fecha',
-                $ahora->toDateString()
-            )
-            ->where(
-                'hora_fin',
-                '>=',
-                $ahora->format('H:i:s')
-            );
-        });
-    })
-    ->with([
-        'usuario'
-    ])
-    ->orderBy('fecha', 'asc')
-    ->orderBy('hora_inicio', 'asc')
-    ->get();
+    // Mostrar:
+    // - eventos futuros
+    // - eventos en curso
+    // Ocultar:
+    // - eventos terminados
+    return $ahora->lessThanOrEqualTo($finEvento);
+})
+->values();
+
+
+  
 
     return $eventos;
 }

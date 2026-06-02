@@ -87,34 +87,43 @@ public function obtenerEventosClaseConcluidos(
         );
     }
 
-    // Fecha actual
-    $hoy = Carbon::today();
+  
 
-    // Eventos anteriores al día de hoy
-    $eventos = Evento::where(
-            'clase_id',
-            $claseId
-        )
 
-        ->whereDate(
-            'fecha',
-            '<',
-            $hoy
-        )
+// Fecha y hora actual
+$ahora = now();
 
-        ->orderBy(
-            'fecha',
-            'desc'
-        )
+// Obtener eventos concluidos
+$eventos = Evento::where(
+        'clase_id',
+        $claseId
+    )
 
-        ->orderBy(
-            'hora_inicio',
-            'desc'
-        )
+    ->get()
 
-        ->get();
+    ->filter(function ($evento) use ($ahora) {
 
-    return $eventos;
+        // Fecha y hora exacta de fin
+        $finEvento = Carbon::createFromFormat(
+            'Y-m-d H:i:s',
+            $evento->fecha . ' ' . $evento->hora_fin
+        );
+
+        // Mostrar solo eventos ya concluidos
+        return $ahora->greaterThan($finEvento);
+    })
+
+    ->sortByDesc(function ($evento) {
+
+        return Carbon::createFromFormat(
+            'Y-m-d H:i:s',
+            $evento->fecha . ' ' . $evento->hora_inicio
+        );
+    })
+
+    ->values();
+
+return $eventos;
 }
 
 //Eventos Clase Activos
@@ -141,34 +150,47 @@ public function obtenerEventosClaseActivos(
         );
     }
 
-    // Fecha actual
-    $hoy = Carbon::today();
+   
 
-    // Eventos de hoy o futuros
-    $eventos = Evento::where(
-            'clase_id',
-            $claseId
-        )
 
-        ->whereDate(
-            'fecha',
-            '>=',
-            $hoy
-        )
+// Fecha y hora actual
+$ahora = now();
 
-        ->orderBy(
-            'fecha',
-            'asc'
-        )
+// Obtener eventos futuros o en curso
+$eventos = Evento::where(
+        'clase_id',
+        $claseId
+    )
 
-        ->orderBy(
-            'hora_inicio',
-            'asc'
-        )
+    ->get()
 
-        ->get();
+    ->filter(function ($evento) use ($ahora) {
 
-    return $eventos;
+        // Fecha y hora exacta de fin
+        $finEvento = Carbon::createFromFormat(
+            'Y-m-d H:i:s',
+            $evento->fecha . ' ' . $evento->hora_fin
+        );
+
+        // Mostrar:
+        // - eventos futuros
+        // - eventos en curso
+        // Ocultar:
+        // - eventos concluidos
+        return $ahora->lessThanOrEqualTo($finEvento);
+    })
+
+    ->sortBy(function ($evento) {
+
+        return Carbon::createFromFormat(
+            'Y-m-d H:i:s',
+            $evento->fecha . ' ' . $evento->hora_inicio
+        );
+    })
+
+    ->values();
+
+return $eventos;
 }
 
 
@@ -268,46 +290,50 @@ public function mostrarEventosAsignados($usuarioId)
         throw new Exception('Docente no encontrado');
     }
 
-    // Obtener fecha y hora actual
-    $ahora = now();
 
-    // Obtener eventos asignados que aún no terminan
-    $eventos = Evento::whereHas(
-        'registradores',
-        function ($query) use ($usuarioId) {
+// Obtener fecha y hora actual
+$ahora = now();
 
-            $query->where(
-                'usuarios.id',
-                $usuarioId
-            );
-        }
-    )
-    ->where(function ($query) use ($ahora) {
+// Obtener eventos asignados que aún no concluyen
+$eventos = Evento::whereHas(
+    'registradores',
+    function ($query) use ($usuarioId) {
 
-        // Eventos futuros
-        $query->where('fecha', '>', $ahora->toDateString())
+        $query->where(
+            'usuarios.id',
+            $usuarioId
+        );
+    }
+)
+->with([
+    'clase',
+    'usuario'
+])
+->orderBy('fecha', 'asc')
+->orderBy('hora_inicio', 'asc')
+->get()
+->filter(function ($evento) use ($ahora) {
 
-        // O eventos de hoy que aún no terminan
-        ->orWhere(function ($subQuery) use ($ahora) {
+    // Fecha y hora exacta de inicio
+    $inicioEvento = Carbon::createFromFormat(
+        'Y-m-d H:i:s',
+        $evento->fecha . ' ' . $evento->hora_inicio
+    );
 
-            $subQuery->where(
-                'fecha',
-                $ahora->toDateString()
-            )
-            ->where(
-                'hora_fin',
-                '>=',
-                $ahora->format('H:i:s')
-            );
-        });
-    })
-    ->with([
-        'clase',
-        'usuario'
-    ])
-    ->orderBy('fecha', 'asc')
-    ->orderBy('hora_inicio', 'asc')
-    ->get();
+    // Fecha y hora exacta de fin
+    $finEvento = Carbon::createFromFormat(
+        'Y-m-d H:i:s',
+        $evento->fecha . ' ' . $evento->hora_fin
+    );
+
+    // Mostrar:
+    // - eventos futuros
+    // - eventos en curso
+    // Ocultar:
+    // - eventos terminados
+    return $ahora->lessThanOrEqualTo($finEvento);
+})
+->values();
 
     return $eventos;
 }
@@ -511,26 +537,20 @@ public function asignarRegistradorEvento(
         );
     }
 
-    // // Validar que el evento no haya iniciado
-    // $inicioEvento = Carbon::parse(
-    //     $evento->fecha . ' ' . $evento->hora_inicio
-    // );
+    // Hora actual
+    $ahora = now();
 
-    // if (now()->greaterThanOrEqualTo($inicioEvento)) {
+    // Fecha y hora de inicio del evento
+     $inicioEvento = Carbon::createFromFormat(
+    'Y-m-d H:i:s',
+    $evento->fecha . ' ' . $evento->hora_inicio
+    );
 
-    //     throw new Exception(
-    //         'No puedes asignarle un evento  que ya inició'
-    //     );
-    // }
-
-
-    // Validar que el día del evento no haya pasado
-$fechaEvento = Carbon::parse($evento->fecha);
-
-if (now()->toDateString() > $fechaEvento->toDateString()) {
+     // Validar que el evento aún no haya iniciado
+      if ($ahora->greaterThanOrEqualTo($inicioEvento)) {
 
     throw new Exception(
-        'No puedes asignarle un evento que ya transcurrió'
+        'No puedes asignar un docente a un evento que ya inició o está en curso'
     );
 }
 
