@@ -317,6 +317,11 @@ public function eliminarEventoGeneral($eventoId) {
 
 public function actualizarEventoGeneral($eventoId, Request $request,) 
 {
+    
+
+    try {
+
+
     $request->validate([
             'titulo' => 'required|string|max:255',
             'fecha' => 'required|date',
@@ -328,8 +333,6 @@ public function actualizarEventoGeneral($eventoId, Request $request,)
             'radio_permitido' => 'nullable|integer|min:1',
             'direccion_texto' => 'nullable|string|max:255',
         ]);
-
-    try {
 
         $evento = $this->eventoService->actualizarEventoGeneral(
             $eventoId,

@@ -511,17 +511,28 @@ public function asignarRegistradorEvento(
         );
     }
 
-    // Validar que el evento no haya iniciado
-    $inicioEvento = Carbon::parse(
-        $evento->fecha . ' ' . $evento->hora_inicio
+    // // Validar que el evento no haya iniciado
+    // $inicioEvento = Carbon::parse(
+    //     $evento->fecha . ' ' . $evento->hora_inicio
+    // );
+
+    // if (now()->greaterThanOrEqualTo($inicioEvento)) {
+
+    //     throw new Exception(
+    //         'No puedes asignarle un evento  que ya inició'
+    //     );
+    // }
+
+
+    // Validar que el día del evento no haya pasado
+$fechaEvento = Carbon::parse($evento->fecha);
+
+if (now()->toDateString() > $fechaEvento->toDateString()) {
+
+    throw new Exception(
+        'No puedes asignarle un evento que ya transcurrió'
     );
-
-    if (now()->greaterThanOrEqualTo($inicioEvento)) {
-
-        throw new Exception(
-            'No puedes asignarle un evento  que ya inició'
-        );
-    }
+}
 
     // Validar que no esté asignado previamente
     $yaAsignado = $evento->registradores()
